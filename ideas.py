@@ -45,7 +45,7 @@ def weekly_feedback_questions(journal, end):
     """Ask only about foods explicitly logged in the prior seven days."""
     start = end - timedelta(days=6)
     names = list(dict.fromkeys(e['name'] for e in journal.get('entries', [])
-                               if e.get('type') == 'meal' and start.isoformat() <= e.get('date', '') <= end.isoformat()
+                               if e.get('type') == 'meal' and not e.get('voided') and start.isoformat() <= e.get('date', '') <= end.isoformat()
                                and isinstance(e.get('name'), str) and e['name'].strip()))
     return {'start': start.isoformat(), 'end': end.isoformat(), 'logged_food_names': names,
             'question': 'Что из записанного на этой неделе понравилось больше? Что хотелось бы повторить или, наоборот, исключить?',

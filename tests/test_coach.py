@@ -79,6 +79,13 @@ class CoachTests(unittest.TestCase):
         self.assertEqual(len(coach.load(self.root / 'journal.json')['entries']), 1)
         self.assertFalse((self.root / '.journal.lock').exists())
 
+    def test_empty_event_id_never_commits_or_duplicates(self):
+        for _ in range(2):
+            with self.assertRaises(ValueError):
+                self.invoke('meal', '--name', 'Synthetic', '--source', 'user', '--event-id', '')
+        self.assertFalse((self.root / 'journal.json').exists())
+        self.assertFalse((self.root / 'journal.sqlite3').exists())
+
     def test_entry_day_week_snapshots_and_reopen(self):
         self.invoke('meal', '--date', '2026-10-31', '--name', 'Example', '--kcal', '600', '--protein', '30', '--source', 'user')
         entry = json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'entry'))
@@ -222,6 +229,67 @@ class CoachTests(unittest.TestCase):
                 food_lookup.fetch_json('https://example.test/?api_key=PRIVATE')
         self.assertNotIn('PRIVATE', str(caught.exception))
         self.assertIn('429', str(caught.exception))
+
+    def test_owner_corrects_exact_entry_with_audit_and_reopens_day(self):
+        d = '2026-10-31'
+        self.invoke('meal', '--date', d, '--name', 'Example', '--kcal', '600', '--source', 'user', '--event-id', 'm1')
+        self.invoke('meal', '--date', d, '--name', 'Other', '--kcal', '100', '--source', 'user', '--event-id', 'm2')
+        self.invoke('close-day', '--date', d, '--confirmed-by-user')
+        self.invoke('correct-entry', '--event-id', 'm1', '--correction-id', 'fix:1', '--field', 'kcal', '--value', '450', '--confirmed-by-user')
+        snap = json.loads(self.invoke('snapshot', '--date', d, '--scope', 'day'))
+        self.assertEqual(snap['logged_kcal'], 550)
+        self.assertFalse(snap['food_complete'])
+        journal = coach.load(self.root / 'journal.json')
+        self.assertEqual(journal['corrections'][0]['before']['kcal'], 600)
+        self.assertEqual(journal['corrections'][0]['after']['kcal'], 450)
+        self.assertEqual(journal['entries'][1]['kcal'], 100)
+        with self.assertRaises(RuntimeError):
+            self.invoke('correct-entry', '--event-id', 'm1', '--correction-id', 'fix:1', '--field', 'kcal', '--value', '450', '--confirmed-by-user')
+        with self.assertRaises(SystemExit):
+            self.invoke('correct-entry', '--event-id', 'missing', '--correction-id', 'fix:2', '--field', 'kcal', '--value', '10', '--confirmed-by-user')
+        self.assertEqual(len(coach.load(self.root / 'journal.json')['corrections']), 1)
+
+    def test_unknown_and_void_usda_are_not_zero_or_logged_food(self):
+        d = '2026-10-31'
+        self.invoke('meal', '--date', d, '--name', 'Unknown', '--kcal', '200', '--source', 'user', '--event-id', 'm1')
+        self.invoke('correct-entry', '--event-id', 'm1', '--correction-id', 'fix:1', '--field', 'kcal', '--value', 'unknown', '--confirmed-by-user')
+        self.assertIsNone(json.loads(self.invoke('snapshot', '--date', d, '--scope', 'day'))['logged_kcal'])
+        self.invoke('void-entry', '--event-id', 'm1', '--correction-id', 'void:1', '--reason', 'Wrong item', '--confirmed-by-user')
+        day = json.loads(self.invoke('snapshot', '--date', d, '--scope', 'day'))
+        self.assertEqual(day['food_entries'], 0)
+        self.assertEqual(day['recorded_food_items'], [])
+        with self.assertRaises(SystemExit):
+            self.invoke('close-day', '--date', d, '--confirmed-by-user')
+        with self.assertRaises(RuntimeError):
+            self.invoke('meal', '--date', d, '--name', 'Reuse', '--source', 'user', '--event-id', 'm1')
+
+    def test_extreme_values_and_unconfirmed_corrections_rejected(self):
+        with self.assertRaises(ValueError):
+            self.invoke('meal', '--name', 'Impossible', '--kcal', '999999', '--source', 'user')
+        with self.assertRaises(ValueError):
+            self.invoke('workout', '--name', 'Impossible', '--minutes', '99999')
+        self.invoke('workout', '--name', 'Walk', '--minutes', '30', '--event-id', 'w1')
+        with self.assertRaises(SystemExit):
+            self.invoke('correct-entry', '--event-id', 'w1', '--correction-id', 'fix:1', '--field', 'minutes', '--value', '25')
+        with self.assertRaises(SystemExit):
+            self.invoke('correct-entry', '--event-id', 'w1', '--correction-id', 'fix:1', '--field', 'minutes', '--value', '3000', '--confirmed-by-user')
+        self.assertEqual(coach.load(self.root / 'journal.json')['entries'][0]['minutes'], 30)
+
+    def test_generated_ids_and_legacy_migration_are_stable(self):
+        self.invoke('meal', '--date', '2026-10-31', '--name', 'New', '--source', 'user')
+        journal = coach.load(self.root / 'journal.json')
+        self.assertTrue(journal['entries'][0]['event_id'].startswith('local:'))
+        journal['entries'].append({'type': 'meal', 'date': '2026-10-31', 'name': 'Legacy', 'kcal': None, 'source': 'user'})
+        coach.save(self.root / 'journal.json', journal)
+        with self.assertRaises(SystemExit):
+            self.invoke('migrate-legacy-ids')
+        mapping = json.loads(self.invoke('migrate-legacy-ids', '--confirmed-by-user'))
+        self.assertEqual(len(mapping['assigned']), 1)
+        migrated_id = mapping['assigned'][0]['event_id']
+        self.assertTrue(migrated_id.startswith('legacy:'))
+        self.assertEqual(json.loads(self.invoke('migrate-legacy-ids', '--confirmed-by-user'))['assigned'], [])
+        self.invoke('correct-entry', '--event-id', migrated_id, '--correction-id', 'legacy:fix:1', '--field', 'kcal', '--value', '200', '--confirmed-by-user')
+        self.assertEqual(coach.load(self.root / 'journal.json')['entries'][1]['kcal'], 200)
 
 
 if __name__ == '__main__':

@@ -6,7 +6,8 @@ import json
 import math
 import os
 import stat
-from datetime import date, timedelta
+import uuid
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -57,6 +58,16 @@ def save(path, value):
         f.flush()
         os.fsync(f.fileno())
     os.replace(tmp, path)
+    dir_fd = os.open(path.parent, os.O_RDONLY)
+    try:
+        os.fsync(dir_fd)
+    finally:
+        os.close(dir_fd)
+    if path.name == 'journal.json':
+        # JSON remains the recovery source; SQLite is a private queryable mirror.
+        # If indexing fails, the JSON write already committed and a later sync repairs it.
+        from history_db import sync
+        sync(path.with_suffix('.sqlite3'), value)
 
 
 def save_png(path, image):
@@ -80,13 +91,79 @@ def number(value, *, positive=False):
 
 
 def add_entry(data, entry, event_id=None):
-    if event_id:
-        if len(event_id) > 128 or any(ord(char) < 33 or ord(char) > 126 for char in event_id):
-            raise ValueError('Event ID must be printable ASCII without spaces (max 128)')
-        if any(e.get('event_id') == event_id for e in data['entries']):
-            raise RuntimeError('Event ID already recorded; no duplicate was added')
-        entry['event_id'] = event_id
+    if event_id is None:
+        event_id = f'local:{uuid.uuid4().hex}'
+    if not event_id or len(event_id) > 128 or any(ord(char) < 33 or ord(char) > 126 for char in event_id):
+        raise ValueError('Event ID must be nonempty printable ASCII without spaces (max 128)')
+    if any(e.get('event_id') == event_id for e in data['entries']):
+        raise RuntimeError('Event ID already recorded; no duplicate was added')
+    entry['event_id'] = event_id
     data['entries'].append(entry)
+
+ENTRY_LIMITS = {'kcal': 10000, 'protein': 1500, 'fat': 1500, 'carbs': 1500,
+                'grams': 10000, 'minutes': 1440, 'sets': 1000, 'reps': 10000,
+                'load_kg': 2000, 'kg': 500}
+ENTRY_FIELDS = {'meal': {'name', 'grams', 'kcal', 'protein', 'fat', 'carbs'},
+                'workout': {'name', 'minutes', 'sets', 'reps', 'load_kg'},
+                'weight': {'kg'}}
+
+def validate_entry_limits(entry):
+    for field, limit in ENTRY_LIMITS.items():
+        value = entry.get(field)
+        if value is not None and (type(value) not in (int, float) or not math.isfinite(value) or value < 0 or value > limit):
+            raise ValueError(f'Check {field}; conservative input limit is {limit} (not a health target)')
+    for field in ('minutes', 'grams', 'kg'):
+        if field in entry and entry[field] is not None and entry[field] == 0:
+            raise ValueError(f'{field} must be positive')
+    strength = (entry.get('sets'), entry.get('reps'), entry.get('load_kg'))
+    if entry['type'] == 'workout' and any(v is not None for v in strength):
+        if any(v is None for v in strength) or any(type(v) is not int or v < 1 for v in strength[:2]):
+            raise ValueError('Strength fields require positive sets/reps and nonnegative load together')
+
+def revise_entry(data, event_id, correction_id, *, field=None, value=None, reason=None):
+    """One locked revision or void; preserve before-image for private audit."""
+    if (not event_id or not correction_id or len(correction_id) > 128
+            or any(ord(char) < 33 or ord(char) > 126 for char in correction_id)):
+        raise ValueError('Existing event ID and unique correction ID are required')
+    history = data.setdefault('corrections', [])
+    if any(item['correction_id'] == correction_id for item in history):
+        raise RuntimeError('Correction ID already applied; nothing changed')
+    matches = [entry for entry in data['entries'] if entry.get('event_id') == event_id]
+    if len(matches) != 1 or matches[0].get('voided'):
+        raise ValueError('Active entry not found by exact event ID')
+    entry = matches[0]
+    if field is None:
+        if not reason or not reason.strip():
+            raise ValueError('Voiding requires a short owner-confirmed reason')
+        after = {**entry, 'voided': True}
+    else:
+        if field not in ENTRY_FIELDS[entry['type']]:
+            raise ValueError('Field cannot be corrected for this entry type')
+        if entry['type'] == 'meal' and entry.get('source') == 'usda':
+            raise ValueError('USDA entries must be voided and re-logged with a verified food and portion')
+        if field == 'name':
+            if not value or not value.strip() or len(value) > 200:
+                raise ValueError('Name must be nonempty (max 200 characters)')
+            parsed = value.strip()
+        elif field in ('sets', 'reps'):
+            parsed = int(value)
+            if str(parsed) != value or parsed < 1:
+                raise ValueError('Sets/reps must be positive integers')
+        else:
+            parsed = None if value == 'unknown' else number(value, positive=field in ('grams', 'minutes', 'kg'))
+            if parsed is None and field in ('minutes', 'kg'):
+                raise ValueError('Required value cannot be unknown')
+        after = {**entry, field: parsed}
+        validate_entry_limits(after)
+    before = dict(entry)
+    entry.clear()
+    entry.update(after)
+    history.append({'correction_id': correction_id, 'event_id': event_id,
+                    'at_utc': datetime.now(timezone.utc).isoformat(),
+                    'reason': reason.strip() if reason else None,
+                    'before': before, 'after': dict(entry)})
+    if entry['type'] == 'meal':
+        data['food_complete_days'] = [d for d in data['food_complete_days'] if d != entry['date']]
 
 
 def day(value):
@@ -97,6 +174,8 @@ def aggregate(data, end, days=7):
     start = end - timedelta(days=days - 1)
     rows = {str(start + timedelta(days=i)): {'kcal': 0, 'protein': 0, 'fat': 0, 'carbs': 0, 'known': {'kcal': 0, 'protein': 0, 'fat': 0, 'carbs': 0}, 'micros': {}, 'micro_known': {}, 'meals': 0, 'workouts': 0, 'workout_minutes': 0, 'sets': 0, 'volume_kg': 0, 'weight': None} for i in range(days)}
     for e in data['entries']:
+        if e.get('voided'):
+            continue
         d = e['date']
         if d not in rows:
             continue
@@ -194,7 +273,7 @@ def snapshot(data, end, scope, event_id=None):
         rows = aggregate(data, finish, 7)
         complete = set(data.get('food_complete_days', []))
         complete_rows = [r for d, r in rows.items() if d in complete and r['meals'] and r['known']['kcal'] == r['meals']]
-        week_entries = [e for e in data['entries'] if start.isoformat() <= e['date'] <= finish.isoformat()]
+        week_entries = [e for e in data['entries'] if not e.get('voided') and start.isoformat() <= e['date'] <= finish.isoformat()]
         estimated = sum(e['type'] == 'meal' and e.get('source') == 'photo-estimate' for e in week_entries)
         mean = round(sum(r['kcal'] for r in complete_rows) / len(complete_rows), 1) if complete_rows else None
         bounds = data.get('targets', {}).get('weekly_avg_kcal_range')
@@ -220,7 +299,7 @@ def snapshot(data, end, scope, event_id=None):
                           'food_complete': d in complete and bool(r['meals']), 'workout_minutes': r['workout_minutes'] if r['workouts'] else None} for d, r in rows.items()],
                 'note': 'Activity intensity and full-week coverage unverified; no clinical or diet-quality grade.'}
     d = end.isoformat()
-    day_entries = [e for e in data['entries'] if e['date'] == d]
+    day_entries = [e for e in data['entries'] if not e.get('voided') and e['date'] == d]
     row = aggregate(data, end, 1)[d]
     base = {'kind': scope, 'date': d, 'logged_kcal': row['kcal'] if row['known']['kcal'] else None,
             'kcal_known_meals': row['known']['kcal'],
@@ -387,6 +466,20 @@ def main(argv=None):
     close = sub.add_parser('close-day', help='Confirm all food for a date was logged')
     close.add_argument('--date', type=day, default=date.today().isoformat())
     close.add_argument('--confirmed-by-user', action='store_true', required=True)
+    correction = sub.add_parser('correct-entry', help='Owner-approved exact-field correction, with private audit history')
+    correction.add_argument('--event-id', required=True)
+    correction.add_argument('--correction-id', required=True, help='Stable unique ID for retry safety')
+    correction.add_argument('--field', required=True, choices=sorted(set().union(*ENTRY_FIELDS.values())))
+    correction.add_argument('--value', required=True, help='New value; use unknown for optional numeric fields')
+    correction.add_argument('--reason', help='Owner-confirmed reason; stays private')
+    correction.add_argument('--confirmed-by-user', action='store_true', required=True)
+    void = sub.add_parser('void-entry', help='Mark mistaken entry void, retaining a private audit record')
+    void.add_argument('--event-id', required=True)
+    void.add_argument('--correction-id', required=True)
+    void.add_argument('--reason', required=True)
+    void.add_argument('--confirmed-by-user', action='store_true', required=True)
+    migrate = sub.add_parser('migrate-legacy-ids', help='Owner-approved immutable IDs for older records without IDs')
+    migrate.add_argument('--confirmed-by-user', action='store_true', required=True)
     for cmd in ('report', 'card', 'trends', 'snapshot'):
         r = sub.add_parser(cmd)
         r.add_argument('--date', type=day, default=date.today().isoformat())
@@ -402,7 +495,7 @@ def main(argv=None):
             r.add_argument('--event-id', help='Select the exact new entry, not simply the last record on that date')
     args = p.parse_args(argv)
     path = store_path(args)
-    if args.command in ('target', 'visual-profile', 'meal', 'food', 'workout', 'weight', 'close-day'):
+    if args.command in ('target', 'visual-profile', 'meal', 'food', 'workout', 'weight', 'close-day', 'correct-entry', 'void-entry', 'migrate-legacy-ids'):
         with write_lock(path):
             return execute(p, args, path)
     return execute(p, args, path)
@@ -426,7 +519,9 @@ def execute(p, args, path):
             p.error('Meal name cannot be blank')
         if args.grams is not None and args.grams > 10000:
             p.error('Check serving grams')
-        add_entry(data, {'type': 'meal', 'date': args.date, 'name': args.name.strip(), 'grams': args.grams, 'kcal': args.kcal, 'protein': args.protein, 'fat': args.fat, 'carbs': args.carbs, 'source': args.source}, args.event_id)
+        entry = {'type': 'meal', 'date': args.date, 'name': args.name.strip(), 'grams': args.grams, 'kcal': args.kcal, 'protein': args.protein, 'fat': args.fat, 'carbs': args.carbs, 'source': args.source}
+        validate_entry_limits(entry)
+        add_entry(data, entry, args.event_id)
         data['food_complete_days'] = [d for d in data['food_complete_days'] if d != args.date]
     elif args.command == 'food':
         if args.fdc_id < 1 or args.grams > 10000:
@@ -437,7 +532,9 @@ def execute(p, args, path):
         if values['kcal'] is None or not item['description']:
             p.error('USDA item has no usable kcal or description; nothing logged')
         factor = args.grams / 100
-        add_entry(data, {'type': 'meal', 'date': args.date, 'name': item['description'], 'fdc_id': args.fdc_id, 'grams': args.grams, 'source': 'usda', 'kcal': values['kcal'] * factor, 'protein': values['protein_g'] * factor if values['protein_g'] is not None else None, 'fat': values['fat_g'] * factor if values['fat_g'] is not None else None, 'carbs': values['carbs_g'] * factor if values['carbs_g'] is not None else None, 'micros': {key: value * factor for key, value in values['micros'].items()}}, args.event_id)
+        entry = {'type': 'meal', 'date': args.date, 'name': item['description'], 'fdc_id': args.fdc_id, 'grams': args.grams, 'source': 'usda', 'kcal': values['kcal'] * factor, 'protein': values['protein_g'] * factor if values['protein_g'] is not None else None, 'fat': values['fat_g'] * factor if values['fat_g'] is not None else None, 'carbs': values['carbs_g'] * factor if values['carbs_g'] is not None else None, 'micros': {key: value * factor for key, value in values['micros'].items()}}
+        validate_entry_limits(entry)
+        add_entry(data, entry, args.event_id)
         data['food_complete_days'] = [d for d in data['food_complete_days'] if d != args.date]
     elif args.command == 'workout':
         if not args.name.strip():
@@ -445,13 +542,36 @@ def execute(p, args, path):
         strength = (args.sets, args.reps, args.load_kg)
         if any(x is not None for x in strength) and (any(x is None for x in strength) or args.sets < 1 or args.reps < 1):
             p.error('For strength work provide positive --sets, --reps and nonnegative --load-kg together')
-        add_entry(data, {'type': 'workout', 'date': args.date, 'name': args.name.strip(), 'minutes': args.minutes, 'sets': args.sets, 'reps': args.reps, 'load_kg': args.load_kg}, args.event_id)
+        entry = {'type': 'workout', 'date': args.date, 'name': args.name.strip(), 'minutes': args.minutes, 'sets': args.sets, 'reps': args.reps, 'load_kg': args.load_kg}
+        validate_entry_limits(entry)
+        add_entry(data, entry, args.event_id)
     elif args.command == 'weight':
         if args.kg > 500:
             p.error('Check weight units (expected kg)')
-        add_entry(data, {'type': 'weight', 'date': args.date, 'kg': args.kg}, args.event_id)
+        entry = {'type': 'weight', 'date': args.date, 'kg': args.kg}
+        validate_entry_limits(entry)
+        add_entry(data, entry, args.event_id)
+    elif args.command in ('correct-entry', 'void-entry'):
+        try:
+            revise_entry(data, args.event_id, args.correction_id,
+                         field=args.field if args.command == 'correct-entry' else None,
+                         value=args.value if args.command == 'correct-entry' else None,
+                         reason=args.reason)
+        except (ValueError, argparse.ArgumentTypeError) as exc:
+            p.error(str(exc))
+    elif args.command == 'migrate-legacy-ids':
+        assigned = []
+        existing = {e.get('event_id') for e in data['entries'] if e.get('event_id')}
+        for index, entry in enumerate(data['entries']):
+            if not entry.get('event_id'):
+                event_id = f'legacy:{uuid.uuid4().hex}'
+                while event_id in existing:
+                    event_id = f'legacy:{uuid.uuid4().hex}'
+                entry['event_id'] = event_id
+                existing.add(event_id)
+                assigned.append({'index': index, 'date': entry['date'], 'type': entry['type'], 'event_id': event_id})
     elif args.command == 'close-day':
-        if not any(e['type'] == 'meal' and e['date'] == args.date for e in data['entries']):
+        if not any(e['type'] == 'meal' and not e.get('voided') and e['date'] == args.date for e in data['entries']):
             p.error('Cannot close a day without food records; missing is unknown')
         data['food_complete_days'] = sorted(set(data['food_complete_days']) | {args.date})
     elif args.command == 'report':
@@ -468,6 +588,11 @@ def execute(p, args, path):
         print(args.output.resolve())
         return
     save(path, data)
+    if args.command == 'migrate-legacy-ids':
+        print(json.dumps({'assigned': assigned, 'note': 'Keep mapping private; verify the exact record before correction.'}, ensure_ascii=False))
+        return
+    if args.command in ('meal', 'food', 'workout', 'weight'):
+        print(f"Event ID: {entry['event_id']}")
     print(f"Recorded {args.command} in {path}")
 
 

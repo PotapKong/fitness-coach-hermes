@@ -45,6 +45,19 @@ python3 "$SKILL_DIR/coach.py" card --view micro-trend --nutrient iron_mg --outpu
 
 For actual use, set `COACH_DATA_DIR` to a private path outside the repository (for example `$HOME/.local/share/fitness-coach-hermes`) and obtain the owner's consent before storing anything. The target, lunch and weight above are **synthetic examples**, not a prescription or the owner's data. Set a target only after the user explicitly chooses it. A food photo does not establish exact calories. Use weighed portions or packaging/USDA entries; label uncertain estimates.
 
+## Long-term private history (not chat context)
+
+`journal.json` in `COACH_DATA_DIR` is the durable source of truth. Every write also mirrors the full journal and indexed entries into owner-only `journal.sqlite3` in that **same private per-person directory**; corrections and completed-day markers are indexed. This is a local database, not Hermes conversation memory or a cloud sync. Upgrading a pre-database journal is non-destructive: the first write creates SQLite; to build SQLite **without modifying the old JSON**, run `python3 "$SKILL_DIR/history_db.py" --data-dir "$COACH_DATA_DIR" sync`. If a database index update fails, keep the JSON and retry `sync`; if SQLite is corrupt, first get owner approval, then run `python3 "$SKILL_DIR/history_db.py" --data-dir "$COACH_DATA_DIR" repair --confirmed-by-user`. It quarantines the corrupt DB (does not delete it) and rebuilds from the JSON. Do not publish either file. Back up the private directory securely.
+
+```bash
+python3 "$SKILL_DIR/history_db.py" --data-dir "$COACH_DATA_DIR" history --from-date 2026-01-01 --limit 50 --offset 0
+python3 "$SKILL_DIR/history_db.py" --data-dir "$COACH_DATA_DIR" progress --limit 12 --offset 0
+python3 "$SKILL_DIR/history_db.py" --data-dir "$COACH_DATA_DIR" history --include-voided --limit 50
+python3 "$SKILL_DIR/history_db.py" --data-dir "$COACH_DATA_DIR" corrections --limit 50
+```
+
+History queries page through **all years** and expose `has_more` and a verified total; they do not flood one chat with the whole journal. Monthly progress distinguishes confirmed-complete days with known energy from partial recorded totals, shows recorded activity and weight observations; it never fills missing days with zero or infers medical outcomes. The agent should query the database for the relevant period in each new session instead of storing private records in global memory.
+
 Important upstream caveat: the official `nutrition_search.py` currently maps nutrients by name and can output kJ as kcal when both Energy units occur (USDA FDC 171287: 599 kJ vs 143 kcal per 100 g). Use this repository's `food_lookup.py`, which filters explicitly for `unitName=kcal`; a missing kcal value remains null.
 
 ## Telegram
@@ -61,15 +74,16 @@ The built-in PNG is a deterministic data chart, not a diet-quality score. [VISUA
 
 ## Audit, recipes and optional morning ideas
 
-An [independent scoped review](AUDIT.md) scored the previous public revision **6.5/10 as a local journal/reporting skill**, not as a clinical or autonomous coach. It identified missing-energy-as-zero, open-day averages, entry receipt ordering, and the absence of reminder/recipe automation. The first three have regression-tested fixes; do **not** treat the older score as a score of these later changes.
+An [independent scoped review](AUDIT.md) scored the older revision 6.5/10 for local journaling. A subsequent independent review of public SHA `ece7df5a285ec6cd0bdda937f660c60b598de730` scored **8/10 for local journaling/reporting** and **3/10 for an autonomous nutrition/training coach** (29 tests). These are scoped historical scores, **not a new score for this revision**. It highlighted correction/edit absence, lack of real delivery and the code-update trust boundary. This revision adds a confirmed correction/void flow, conservative numeric ceilings and private consent/dedupe primitives, but **still has no verified delivery adapter or clinical standing**.
 
-The current catalog has 88 source-linked recipe pages across 12 first-party domains (including [NHS Healthier Families](https://www.nhs.uk/healthier-families/recipes/)); it stores short editorial metadata, not full copyrighted methods/photos. Source preparation time is not always ready-to-eat time: passive chilling is labelled separately. `recipe_sources.py` stages candidates for manual review, never auto-imports. `ideas.py --profile /private/path/profile.json --date YYYY-MM-DD` selects a link and a cautious optional activity candidate from an explicitly confirmed, private `0600` profile. It does not generate a meal plan, determine whether a recipe is safe for an allergy, schedule delivery or read the journal. For restrictions or allergies it withholds automatic recipe suggestions; see [AUTOMATION.md](AUTOMATION.md) for consent and setup.
+The current catalog has 88 source-linked recipe pages across 12 first-party domains (including [NHS Healthier Families](https://www.nhs.uk/healthier-families/recipes/)); it stores short editorial metadata, not full copyrighted methods/photos. Source preparation time is not always ready-to-eat time: passive chilling is labelled separately. `recipe_sources.py` stages candidates for manual review, never auto-imports. `ideas.py --profile /private/path/profile.json --date YYYY-MM-DD` selects a link and a cautious optional activity candidate from an explicitly confirmed, private `0600` profile. It does not generate a meal plan, determine whether a recipe is safe for an allergy, schedule delivery or read the journal. For restrictions or allergies it withholds automatic recipe suggestions. `automation_core.py` adds private subscription/dedupe state, but **does not transmit messages or create notification jobs**. See [AUTOMATION.md](AUTOMATION.md).
 
 ## Privacy / limitations
 
 - `private-data/`, `*.png`, `.env` and caches are gitignored. Data outside the repo is preferred. Logs are health-adjacent personal information; avoid putting them in GitHub even if the repo is private.
 - Journal and new PNG cards are atomically written with owner-only file permissions (0600); this is not encrypted storage. Keep the parent folder private and back it up securely if needed.
 - Journal writes use an exclusive local lock; a stale `.journal.lock` after a crash blocks new writes until the owner verifies no writer is active and removes that file. If several agents share a journal, pass a stable `--event-id` for each incoming message to prevent retry duplicates. Never upload real health records to GitHub, even though this code repository is public.
+- With explicit owner confirmation, `correct-entry --event-id ORIGINAL --correction-id UNIQUE --field kcal --value 450 --confirmed-by-user` updates one exact record, retains a private before/after audit trail and reopens the food day. Use `--value unknown` for uncertain optional nutrients; `void-entry` deactivates a wrong record before re-logging. Never use these commands to silently alter a person's journal.
 - Reports count **logged meals**, not all food eaten. A blank day means no records, not fasting; food with unknown calories is `null`, not `0`. `trends` averages only owner-confirmed complete food days where every logged food has known calories. A printed subtotal on a partial day is explicitly marked partial. The goal is user-supplied, not medically assigned.
 - If the user reports symptoms, a medical condition, an eating disorder, pregnancy, or significant pain, refer to a qualified professional rather than prescribing a regimen.
 - Primary sources and comparisons with other open agent skills are in [EVIDENCE.md](EVIDENCE.md). Their ranges describe populations, not an automatic personal plan.

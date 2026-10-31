@@ -23,7 +23,7 @@ REPO = "https://github.com/PotapKong/fitness-coach-hermes.git"
 BRANCH = "main"
 FILES = ("SKILL.md", "README.md", "EVIDENCE.md", "VISUAL.md", "AUTOMATION.md",
          "AUDIT.md", "UPDATES.md", "LICENSE", "coach.py", "food_lookup.py", "ideas.py",
-         "recipe_sources.py", "recipes.json", "update_skill.py")
+         "recipe_sources.py", "automation_core.py", "history_db.py", "recipes.json", "update_skill.py")
 MARKER = ".upstream-sha"
 PYTHON = tuple(name for name in FILES if name.endswith(".py"))
 GIT_ENV = {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_CONFIG_NOSYSTEM": "1"}
@@ -44,6 +44,9 @@ def remote_sha():
 
 
 def validate(source):
+    unknown_code = {path.name for path in source.glob('*.py')} - set(FILES)
+    if unknown_code:
+        raise ValueError('New Python files need an explicitly reviewed updater allowlist: ' + ', '.join(sorted(unknown_code)))
     for name in FILES:
         file = source / name
         if not file.is_file() or file.is_symlink():
@@ -154,9 +157,17 @@ def update(args, target):
     marker = target / MARKER
     current = marker.read_text(encoding="ascii").strip() if marker.is_file() else None
     if current == sha:
-        if args.check:
-            print("up-to-date", sha)
-        return
+        try:
+            validate(target)
+        except (ValueError, OSError, KeyError, TypeError, json.JSONDecodeError):
+            if args.check:
+                print('installed package incomplete for current updater; repair needed', sha)
+                return
+            # A previous fixed-allowlist updater may have marked an incomplete release current.
+        else:
+            if args.check:
+                print("up-to-date", sha)
+            return
     if args.check:
         print("upstream update available", current or "not-installed", "->", sha)
         return

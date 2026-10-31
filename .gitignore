@@ -1,5 +1,8 @@
 private-data/
 journal.json
+journal.sqlite3*
+automation.json
+profile.json
 *.png
 .env
 __pycache__/

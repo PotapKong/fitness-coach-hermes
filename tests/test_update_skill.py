@@ -18,6 +18,8 @@ class UpdaterTests(unittest.TestCase):
             self.assertIsNone(update_skill.install(ROOT, target, 'a' * 40))
             self.assertTrue(target.is_symlink())
             self.assertEqual(target.resolve().parent, pathlib.Path(tmp) / 'skill-releases/fitness-coach-hermes')
+            self.assertTrue((target / 'history_db.py').is_file())
+            self.assertTrue((target / 'automation_core.py').is_file())
             self.assertEqual((target / update_skill.MARKER).read_text().strip(), 'a' * 40)
             backup = update_skill.install(ROOT, target, 'b' * 40)
             self.assertEqual(backup.parent, pathlib.Path(tmp) / 'skill-releases/fitness-coach-hermes')
