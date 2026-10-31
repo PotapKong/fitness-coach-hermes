@@ -27,7 +27,7 @@ Before enabling the job, test `--apply` against a disposable target with `--targ
 ```bash
 hermes cron create 'every 24h' \
   --name fitness-coach-hermes-updater \
-  --script "$HOME/.hermes/scripts/fitness-coach-update.py" \
+  --script fitness-coach-update.py \
   --no-agent --deliver local --failure-deliver local
 hermes cron list
 ```
