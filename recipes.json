@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "source": "NHS Healthier Families recipes",
+  "verified_on": "2026-10-31",
+  "notice": "Short source-linked metadata, not copied instructions. Ingredient hints are incomplete and never prove allergen safety; check the canonical recipe and packaging before cooking.",
+  "recipes": [
+    {"id":"nhs-eggs-paprika","title_ru":"Яйца с паприкой и томатами","url":"https://www.nhs.uk/healthier-families/recipes/eggs-paprika/","prep_minutes":5,"cook_minutes":20,"meal":["breakfast"],"ingredients_hint":["яйца","цельнозерновой хлеб","лук","томаты","паприка"]},
+    {"id":"nhs-breakfast-burritos","title_ru":"Завтрак-буррито с омлетом и овощами","url":"https://www.nhs.uk/healthier-families/recipes/breakfast-burritos/","prep_minutes":10,"cook_minutes":10,"meal":["breakfast","lunch"],"ingredients_hint":["пшеничная тортилья","яйца","молоко","томаты","сладкий перец","сыр"]},
+    {"id":"nhs-tuna-sweetcorn-pasta","title_ru":"Паста с тунцом и кукурузой","url":"https://www.nhs.uk/healthier-families/recipes/tasty-tuna-and-sweetcorn-pasta/","prep_minutes":10,"cook_minutes":20,"meal":["lunch","dinner"],"ingredients_hint":["цельнозерновая паста","тунец","кукуруза","томаты","лук","чеснок"]},
+    {"id":"nhs-cheats-pizza-calzone","title_ru":"Быстрый кальцоне из тортильи","url":"https://www.nhs.uk/healthier-families/recipes/cheats-pizza-calzone/","prep_minutes":10,"cook_minutes":10,"meal":["lunch","dinner"],"ingredients_hint":["пшеничная тортилья","сыр","томаты","грибы","сладкий перец","салатные листья"]},
+    {"id":"nhs-toasted-oats-fruit","title_ru":"Поджаренная овсянка с йогуртом и фруктами","url":"https://www.nhs.uk/healthier-families/recipes/toasted-oats-with-yoghurt-and-fruit/","prep_minutes":10,"cook_minutes":2,"meal":["breakfast","snack"],"ingredients_hint":["овсяные хлопья","йогурт","орехи","семечки","яблоко","виноград"]},
+    {"id":"nhs-chicken-jacket-potato","title_ru":"Картофель с курицей и томатами","url":"https://www.nhs.uk/healthier-families/recipes/chicken-and-tomato-jacket-potato/","prep_minutes":5,"cook_minutes":25,"meal":["lunch","dinner"],"ingredients_hint":["картофель","курица","томаты","греческий йогурт","зелёный лук"]}
+  ]
+}

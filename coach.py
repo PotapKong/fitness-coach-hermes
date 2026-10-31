@@ -61,7 +61,7 @@ def save(path, value):
 
 def save_png(path, image):
     """Write a private card atomically; never leave health data world-readable."""
-    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    private_directory(path.parent)
     with NamedTemporaryFile('wb', suffix='.png', dir=path.parent, delete=False) as f:
         tmp = Path(f.name)
         os.chmod(tmp, 0o600)
@@ -124,8 +124,11 @@ def telegram_text(data, end):
     rows = aggregate(data, end)
     today = rows[end.isoformat()]
     target = data['targets'].get('kcal')
-    header = f"📊 {end.isoformat()} · " + (f"записано {today['kcal']:.0f} ккал" if today['meals'] else 'нет записей о еде')
-    if target and today['meals']:
+    known = today['known']['kcal']
+    header = f"📊 {end.isoformat()} · " + (f"записано {today['kcal']:.0f} ккал" if known else ('еда записана, калорийность неизвестна' if today['meals'] else 'нет записей о еде'))
+    if known and known < today['meals']:
+        header += f" (по {known} из {today['meals']} записей)"
+    if target and known == today['meals'] and end.isoformat() in data.get('food_complete_days', []):
         header += f" / {target:.0f} ккал (план, не медицинское назначение)"
     macro = lambda k: f"{today[k]:.0f}" if today['known'][k] == today['meals'] and today['meals'] else '—'
     lines = [header, f"Б {macro('protein')} г · Ж {macro('fat')} г · У {macro('carbs')} г", '', 'Последние 7 дней:']
@@ -133,7 +136,8 @@ def telegram_text(data, end):
     for d, r in rows.items():
         blocks = min(12, round(12 * r['kcal'] / scale)) if r['kcal'] else 0
         mark = '█' * blocks + '░' * (12 - blocks)
-        lines.append(f"{d[5:]}  {mark}  " + (f"{r['kcal']:.0f} ккал" if r['meals'] else 'нет записей') + (' · 🏋️' if r['workouts'] else ''))
+        label = (f"{r['kcal']:.0f} ккал" + (f" (по {r['known']['kcal']}/{r['meals']})" if r['known']['kcal'] < r['meals'] else '')) if r['known']['kcal'] else ('калорийность неизвестна' if r['meals'] else 'нет записей')
+        lines.append(f"{d[5:]}  {mark}  {label}" + (' · 🏋️' if r['workouts'] else ''))
     weights = [(d, r['weight']) for d, r in rows.items() if r['weight'] is not None]
     if weights:
         lines.append(f"Вес: {weights[-1][1]:.1f} кг ({weights[-1][0]})")
@@ -156,19 +160,23 @@ def trends(data, end, days=28):
     rows = aggregate(data, end, days)
     measured = [r['weight'] for r in rows.values() if r['weight'] is not None]
     intake_days = sum(bool(r['meals']) for r in rows.values())
+    complete = set(data.get('food_complete_days', []))
+    full_rows = [r for d, r in rows.items() if d in complete and r['meals'] and r['known']['kcal'] == r['meals']]
     return {'start': next(iter(rows)), 'end': end.isoformat(), 'days': days,
             'logged_food_days': intake_days,
-            'avg_logged_kcal': round(sum(r['kcal'] for r in rows.values() if r['meals']) / intake_days, 1) if intake_days else None,
+            'complete_food_days_with_known_kcal': len(full_rows),
+            'avg_logged_kcal': round(sum(r['kcal'] for r in full_rows) / len(full_rows), 1) if full_rows else None,
             'weight_delta_kg': round(measured[-1] - measured[0], 2) if len(measured) > 1 else None,
             'training_days': sum(bool(r['workouts']) for r in rows.values()),
             'training_minutes': sum(r['workout_minutes'] for r in rows.values()),
-            'series': [{'date': d, 'logged_kcal': r['kcal'] if r['meals'] else None,
+            'series': [{'date': d, 'logged_kcal': r['kcal'] if r['known']['kcal'] else None,
+                        'kcal_known_meals': r['known']['kcal'], 'food_complete': d in complete and bool(r['meals']),
                         'meals': r['meals'], 'macros_g': {k: r[k] if r['known'][k] == r['meals'] and r['meals'] else None for k in ('protein', 'fat', 'carbs')},
                         'micros': {k: {'amount': value, 'known_meals': r['micro_known'][k], 'total_meals': r['meals']} for k, value in r['micros'].items()},
                         'training_minutes': r['workout_minutes'] if r['workouts'] else None, 'weight_kg': r['weight']} for d, r in rows.items()]}
 
 
-def snapshot(data, end, scope):
+def snapshot(data, end, scope, event_id=None):
     """Canonical facts for distinct Telegram cards; no inferred health grades."""
     def food_items(entries):
         """Observed meal labels only; names are not parsed into ingredients."""
@@ -185,7 +193,7 @@ def snapshot(data, end, scope):
         finish = start + timedelta(days=6)
         rows = aggregate(data, finish, 7)
         complete = set(data.get('food_complete_days', []))
-        complete_rows = [r for d, r in rows.items() if d in complete and r['meals']]
+        complete_rows = [r for d, r in rows.items() if d in complete and r['meals'] and r['known']['kcal'] == r['meals']]
         week_entries = [e for e in data['entries'] if start.isoformat() <= e['date'] <= finish.isoformat()]
         estimated = sum(e['type'] == 'meal' and e.get('source') == 'photo-estimate' for e in week_entries)
         mean = round(sum(r['kcal'] for r in complete_rows) / len(complete_rows), 1) if complete_rows else None
@@ -195,7 +203,8 @@ def snapshot(data, end, scope):
             status = 'within_user_range' if bounds[0] <= mean <= bounds[1] else 'outside_user_range'
         return {'kind': 'week', 'start': start.isoformat(), 'end': finish.isoformat(),
                 'recorded_food_days': sum(bool(r['meals']) for r in rows.values()),
-                'confirmed_complete_food_days': len(complete_rows), 'days_in_period': 7,
+                'confirmed_complete_food_days': sum(d in complete and bool(r['meals']) for d, r in rows.items()),
+                'complete_food_days_with_known_kcal': len(complete_rows), 'days_in_period': 7,
                 'average_logged_kcal_on_complete_days': mean,
                 'estimated_food_entries': estimated,
                 'user_weekly_average_kcal_range': bounds,
@@ -206,13 +215,15 @@ def snapshot(data, end, scope):
                 'recorded_workout_items': workout_items(week_entries),
                 'visual_preferences': data.get('visual_preferences'),
                 'weights_kg': [{'date': d, 'kg': r['weight']} for d, r in rows.items() if r['weight'] is not None],
-                'days': [{'date': d, 'logged_kcal': r['kcal'] if r['meals'] else None,
+                'days': [{'date': d, 'logged_kcal': r['kcal'] if r['known']['kcal'] else None,
+                          'kcal_known_meals': r['known']['kcal'], 'food_entries': r['meals'],
                           'food_complete': d in complete and bool(r['meals']), 'workout_minutes': r['workout_minutes'] if r['workouts'] else None} for d, r in rows.items()],
                 'note': 'Activity intensity and full-week coverage unverified; no clinical or diet-quality grade.'}
     d = end.isoformat()
     day_entries = [e for e in data['entries'] if e['date'] == d]
     row = aggregate(data, end, 1)[d]
-    base = {'kind': scope, 'date': d, 'logged_kcal': row['kcal'] if row['meals'] else None,
+    base = {'kind': scope, 'date': d, 'logged_kcal': row['kcal'] if row['known']['kcal'] else None,
+            'kcal_known_meals': row['known']['kcal'],
             'macros_g': {k: row[k] if row['meals'] and row['known'][k] == row['meals'] else None for k in ('protein', 'fat', 'carbs')},
             'micros_recorded': {k: {'amount': v, 'known_meals': row['micro_known'][k], 'total_meals': row['meals']} for k, v in row['micros'].items()},
             'food_entries': row['meals'], 'food_complete': d in data.get('food_complete_days', []),
@@ -229,7 +240,9 @@ def snapshot(data, end, scope):
                                 'confirmed_complete_food_days': sum(day in data.get('food_complete_days', []) for day in week_rows),
                                 'training_minutes_recorded': sum(r['workout_minutes'] for r in week_rows.values())}
     if scope == 'entry':
-        latest = day_entries[-1] if day_entries else None
+        latest = next((e for e in day_entries if e.get('event_id') == event_id), None) if event_id else (day_entries[-1] if day_entries else None)
+        if event_id and latest is None:
+            raise ValueError('Event ID not found for this date; no receipt created')
         base['latest_entry'] = {k: latest.get(k) for k in ('type', 'name', 'grams', 'kcal', 'minutes', 'kg', 'source') if k in latest} if latest else None
     return base
 
@@ -308,7 +321,8 @@ def render_png(data, end, path, view='nutrition', nutrient='iron_mg'):
         draw.text((75, 1000), 'Без персональной нормы и назначения добавок', font=font(20), fill='#8092a6')
         save_png(path, im)
         return
-    draw.text((75, 205), (f"Записано: {today['kcal']:.0f} ккал" if today['meals'] else 'Сегодня нет записей о еде') + (f" / план {target:.0f}" if target and today['meals'] else ''), font=font(32), fill='#42d49b')
+    today_kcal = (f"Записано: {today['kcal']:.0f} ккал" + (f" ({today['known']['kcal']}/{today['meals']})" if today['known']['kcal'] < today['meals'] else '')) if today['known']['kcal'] else ('Калорийность неизвестна' if today['meals'] else 'Сегодня нет записей о еде')
+    draw.text((75, 205), today_kcal + (f" / план {target:.0f}" if target and today['meals'] == today['known']['kcal'] and end.isoformat() in data.get('food_complete_days', []) else ''), font=font(32), fill='#42d49b')
     macro = lambda k: f"{today[k]:.0f}" if today['known'][k] == today['meals'] and today['meals'] else '—'
     draw.text((75, 265), f"Б {macro('protein')} г    Ж {macro('fat')} г    У {macro('carbs')} г" if today['meals'] else 'Пустой день не означает голодание', font=font(26), fill='white')
     draw.text((75, 345), 'Калории по дням', font=font(31), fill='white')
@@ -320,14 +334,14 @@ def render_png(data, end, path, view='nutrition', nutrient='iron_mg'):
         width = round(585 * r['kcal'] / scale)
         if width:
             draw.rounded_rectangle((205, y + 4, 205 + width, y + 32), radius=min(12, width // 2), fill='#42d49b')
-        draw.text((810, y), f"{r['kcal']:.0f}" if r['meals'] else 'нет записи', font=font(19 if not r['meals'] else 24), fill='white' if r['meals'] else '#aab8c8')
+        draw.text((810, y), (f"{r['kcal']:.0f}" + ('*' if r['known']['kcal'] < r['meals'] else '')) if r['known']['kcal'] else ('нет kcal' if r['meals'] else 'нет записи'), font=font(19 if not r['known']['kcal'] else 24), fill='white' if r['known']['kcal'] else '#aab8c8')
         if r['workouts']:
             draw.text((970, y), '●', font=font(22), fill='#ffb454')
     if today['micros']:
         draw.text((75, 920), f"Микро (записано): {len(today['micros'])} показателей", font=font(22), fill='#aab8c8')
     if target:
         draw.text((75, 960), f'План: {target:.0f} ккал/день', font=font(22), fill='#aab8c8')
-    draw.text((75, 1000), 'Только записанные данные · оценка питания не диагноз', font=font(20), fill='#8092a6')
+    draw.text((75, 1000), '* Частичные kcal · нет данных ≠ ноль · не диагноз', font=font(20), fill='#aab8c8')
     save_png(path, im)
 
 
@@ -347,7 +361,7 @@ def main(argv=None):
     m = sub.add_parser('meal', help='Log a confirmed meal estimate')
     m.add_argument('--date', type=day, default=date.today().isoformat())
     m.add_argument('--name', required=True)
-    m.add_argument('--kcal', required=True, type=number)
+    m.add_argument('--kcal', type=number, help='Optional; omit if unknown, explicit 0 only if verified')
     for macro in ('protein', 'fat', 'carbs'):
         m.add_argument('--' + macro, type=number)
     m.add_argument('--source', choices=('label', 'usda', 'user', 'photo-estimate'), required=True)
@@ -385,6 +399,7 @@ def main(argv=None):
             r.add_argument('--nutrient', choices=[key for key, _ in MICROS.values()], default='iron_mg')
         if cmd == 'snapshot':
             r.add_argument('--scope', choices=('entry', 'day', 'week'), required=True)
+            r.add_argument('--event-id', help='Select the exact new entry, not simply the last record on that date')
     args = p.parse_args(argv)
     path = store_path(args)
     if args.command in ('target', 'visual-profile', 'meal', 'food', 'workout', 'weight', 'close-day'):
@@ -446,7 +461,7 @@ def execute(p, args, path):
         print(json.dumps(trends(data, date.fromisoformat(args.date), args.days), ensure_ascii=False, indent=2))
         return
     elif args.command == 'snapshot':
-        print(json.dumps(snapshot(data, date.fromisoformat(args.date), args.scope), ensure_ascii=False, indent=2, allow_nan=False))
+        print(json.dumps(snapshot(data, date.fromisoformat(args.date), args.scope, args.event_id), ensure_ascii=False, indent=2, allow_nan=False))
         return
     elif args.command == 'card':
         render_png(data, date.fromisoformat(args.date), args.output, args.view, args.nutrient)

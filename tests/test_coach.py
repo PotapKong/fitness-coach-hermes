@@ -33,7 +33,8 @@ class CoachTests(unittest.TestCase):
         self.invoke('workout', '--date', '2026-10-31', '--name', 'Walk', '--minutes', '30')
         self.invoke('weight', '--date', '2026-10-31', '--kg', '80')
         report = self.invoke('report', '--date', '2026-10-31')
-        self.assertIn('записано 550 ккал / 2200 ккал', report)
+        self.assertIn('записано 550 ккал', report)
+        self.assertNotIn('/ 2200 ккал', report)  # unfinished food day is not compared with goal
         self.assertIn('10-30  ░░░░░░░░░░░░  нет записей', report)
         self.assertIn('Б 32 г · Ж 15 г · У 70 г', report)
         self.assertIn('Вес: 80.0 кг', report)
@@ -99,6 +100,35 @@ class CoachTests(unittest.TestCase):
         self.assertFalse(json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'day'))['food_complete'])
         with self.assertRaises(SystemExit):
             self.invoke('close-day', '--date', '2026-10-30', '--confirmed-by-user')
+
+    def test_unknown_energy_is_not_zero_or_a_full_day_average(self):
+        d = '2026-10-31'
+        self.invoke('target', '--kcal', '2200', '--confirmed-by-user')
+        self.invoke('meal', '--date', d, '--name', 'Unknown', '--source', 'user', '--event-id', 'unknown')
+        report = self.invoke('report', '--date', d)
+        self.assertIn('калорийность неизвестна', report)
+        self.assertNotIn('записано 0 ккал', report)
+        self.assertIsNone(json.loads(self.invoke('trends', '--date', d))['avg_logged_kcal'])
+        self.invoke('meal', '--date', d, '--name', 'Known', '--source', 'label', '--kcal', '600', '--event-id', 'known')
+        self.invoke('close-day', '--date', d, '--confirmed-by-user')
+        trend = json.loads(self.invoke('trends', '--date', d))
+        self.assertIsNone(trend['avg_logged_kcal'])
+        self.assertEqual(trend['series'][-1]['logged_kcal'], 600)
+        self.assertEqual(trend['series'][-1]['kcal_known_meals'], 1)
+        week = json.loads(self.invoke('snapshot', '--date', d, '--scope', 'week'))
+        self.assertIsNone(week['average_logged_kcal_on_complete_days'])
+        self.assertEqual(week['confirmed_complete_food_days'], 1)
+        self.assertEqual(week['complete_food_days_with_known_kcal'], 0)
+        self.assertIn('по 1 из 2 записей', self.invoke('report', '--date', d))
+
+    def test_receipt_selects_exact_event_even_after_later_record(self):
+        d = '2026-10-31'
+        self.invoke('meal', '--date', d, '--name', 'A', '--source', 'user', '--kcal', '300', '--event-id', 'a')
+        self.invoke('meal', '--date', d, '--name', 'B', '--source', 'user', '--kcal', '400', '--event-id', 'b')
+        receipt = json.loads(self.invoke('snapshot', '--date', d, '--scope', 'entry', '--event-id', 'a'))
+        self.assertEqual(receipt['latest_entry']['name'], 'A')
+        with self.assertRaises(ValueError):
+            self.invoke('snapshot', '--date', d, '--scope', 'entry', '--event-id', 'missing')
 
     def test_weekly_user_range_requires_seven_complete_days(self):
         self.invoke('target', '--kcal', '2000', '--weekly-avg-min', '1900', '--weekly-avg-max', '2100', '--confirmed-by-user')

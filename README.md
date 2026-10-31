@@ -8,7 +8,7 @@ Public MIT-licensed skill with a **private, local-first journal** for Hermes and
 hermes skills install official/health/fitness-nutrition
 git clone https://github.com/PotapKong/fitness-coach-hermes.git
 mkdir -p "$HOME/.hermes/skills/fitness-coach-hermes"
-cp fitness-coach-hermes/{SKILL.md,README.md,EVIDENCE.md,VISUAL.md,LICENSE,coach.py,food_lookup.py} "$HOME/.hermes/skills/fitness-coach-hermes/"
+cp fitness-coach-hermes/{SKILL.md,README.md,EVIDENCE.md,VISUAL.md,AUTOMATION.md,AUDIT.md,LICENSE,coach.py,food_lookup.py,ideas.py,recipes.json} "$HOME/.hermes/skills/fitness-coach-hermes/"
 cp -R fitness-coach-hermes/examples "$HOME/.hermes/skills/fitness-coach-hermes/"  # optional model style references
 # In Telegram start a new session or use /reload-skills after installing.
 ```
@@ -25,14 +25,14 @@ export SKILL_DIR="$HOME/.hermes/skills/fitness-coach-hermes"
 python3 "$SKILL_DIR/food_lookup.py" 'raw egg'  # inspect matching item, kcal unit, FDC ID and portion
 python3 "$SKILL_DIR/coach.py" target --kcal 2100 --weekly-avg-min 2000 --weekly-avg-max 2200 --confirmed-by-user  # synthetic example; owner chooses
 python3 "$SKILL_DIR/coach.py" visual-profile --style bold-athletic --food-scene playful --confirmed-by-user  # synthetic demo only
-python3 "$SKILL_DIR/coach.py" meal --name "Example lunch" --kcal 620 --protein 32 --fat 20 --carbs 70 --source user
+python3 "$SKILL_DIR/coach.py" meal --name "Example lunch" --kcal 620 --protein 32 --fat 20 --carbs 70 --source user --event-id demo:lunch:1
 python3 "$SKILL_DIR/coach.py" food --fdc-id 171287 --grams 120  # only after confirming the food and portion
 python3 "$SKILL_DIR/coach.py" workout --name "Example walk" --minutes 40
 python3 "$SKILL_DIR/coach.py" workout --name "Example squat" --minutes 25 --sets 3 --reps 8 --load-kg 40
 python3 "$SKILL_DIR/coach.py" weight --kg 80.5
 python3 "$SKILL_DIR/coach.py" report
 python3 "$SKILL_DIR/coach.py" trends --days 28
-python3 "$SKILL_DIR/coach.py" snapshot --scope entry    # just after a new entry
+python3 "$SKILL_DIR/coach.py" snapshot --scope entry --event-id demo:lunch:1    # exact entry, not last event
 python3 "$SKILL_DIR/coach.py" snapshot --scope day      # day plus week-to-date brief
 python3 "$SKILL_DIR/coach.py" close-day --confirmed-by-user  # only after confirming a complete food log
 python3 "$SKILL_DIR/coach.py" snapshot --scope week     # ISO Monday–Sunday
@@ -48,7 +48,7 @@ Important upstream caveat: the official `nutrition_search.py` currently maps nut
 
 ## Telegram
 
-In a conversation with the agent: ask «Покажи отчёт за неделю и отправь карточку сюда». The agent runs `report` + `card`, inspects the result and returns an image attachment using `MEDIA:/absolute/path/week.png` to the current chat. It does not need a separate bot when Hermes Telegram gateway is already connected. Other agents need their own authenticated Telegram send/attachment route. Cards show logged calories, activity, available micronutrients and optional micronutrient history; `trends` emits dated JSON for longer comparison. No automatic sends, reminders or public sharing.
+In a conversation with the agent: ask «Покажи отчёт за неделю и отправь карточку сюда». The agent runs `report` + `card`, inspects the result and returns an image attachment using `MEDIA:/absolute/path/week.png` to the current chat. It does not need a separate bot when Hermes Telegram gateway is already connected. Other agents need their own authenticated Telegram send/attachment route. Cards show logged calories, activity, available micronutrients and optional micronutrient history; `trends` emits dated JSON for longer comparison. No automatic sends, reminders or public sharing **by default**. For independently approved morning ideas and missing-log reminders, follow [AUTOMATION.md](AUTOMATION.md); the package does not create cron jobs or transmit messages.
 
 ## Visuals and AI rendering
 
@@ -58,12 +58,18 @@ To individualize future cards, ask the owner to choose a visual style and food-s
 
 The built-in PNG is a deterministic data chart, not a diet-quality score. [VISUAL.md](VISUAL.md) defines three distinct AI-rendered card jobs (on-entry/day-end/week-end), exact-value QA and neutral/teal/amber color semantics. The CLI evaluates **recorded weekly-average energy** against a user-provided range only when all seven food days were owner-confirmed complete and none was photo-estimated. This is not a score of nutritional quality; without those conditions, use neutral colors and show coverage. Private health entries may be sent to an external image provider **only after separate informed consent**; otherwise render locally. Generated labels/bars are never the source of truth. For scheduled end-of-day/week delivery, configure the agent's own scheduler **after** agreeing on local timezone, times and destination; the skill does not create cron jobs automatically.
 
+## Audit, recipes and optional morning ideas
+
+An [independent scoped review](AUDIT.md) scored the previous public revision **6.5/10 as a local journal/reporting skill**, not as a clinical or autonomous coach. It identified missing-energy-as-zero, open-day averages, entry receipt ordering, and the absence of reminder/recipe automation. The first three have regression-tested fixes; do **not** treat the older score as a score of these later changes.
+
+Six [NHS Healthier Families](https://www.nhs.uk/healthier-families/recipes/) recipe links with source-verified prep/cook durations are in `recipes.json`. Add reviewed short metadata to grow the catalog. `ideas.py --profile /private/path/profile.json --date YYYY-MM-DD` selects a link and a cautious optional activity candidate from an explicitly confirmed, private `0600` profile. It does not generate a meal plan, determine whether a recipe is safe for an allergy, schedule delivery or read the journal. For restrictions or allergies it withholds automatic recipe suggestions; see [AUTOMATION.md](AUTOMATION.md) for consent and setup.
+
 ## Privacy / limitations
 
 - `private-data/`, `*.png`, `.env` and caches are gitignored. Data outside the repo is preferred. Logs are health-adjacent personal information; avoid putting them in GitHub even if the repo is private.
 - Journal and new PNG cards are atomically written with owner-only file permissions (0600); this is not encrypted storage. Keep the parent folder private and back it up securely if needed.
 - Journal writes use an exclusive local lock; a stale `.journal.lock` after a crash blocks new writes until the owner verifies no writer is active and removes that file. If several agents share a journal, pass a stable `--event-id` for each incoming message to prevent retry duplicates. Never upload real health records to GitHub, even though this code repository is public.
-- Reports count **logged meals**, not all food eaten. A blank day means no records, not fasting. The goal is user-supplied, not medically assigned.
+- Reports count **logged meals**, not all food eaten. A blank day means no records, not fasting; food with unknown calories is `null`, not `0`. `trends` averages only owner-confirmed complete food days where every logged food has known calories. A printed subtotal on a partial day is explicitly marked partial. The goal is user-supplied, not medically assigned.
 - If the user reports symptoms, a medical condition, an eating disorder, pregnancy, or significant pain, refer to a qualified professional rather than prescribing a regimen.
 - Primary sources and comparisons with other open agent skills are in [EVIDENCE.md](EVIDENCE.md). Their ranges describe populations, not an automatic personal plan.
 
