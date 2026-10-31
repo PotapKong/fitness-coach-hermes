@@ -1,0 +1,45 @@
+# Fitness Coach for Hermes
+
+Private, local-first fitness journal and weekly progress card for Hermes agents. Complements the official [`fitness-nutrition`](https://github.com/NousResearch/hermes-agent/tree/main/optional-skills/health/fitness-nutrition) skill (exercise guidance, wger, USDA lookup, calculators); it does **not** bundle that skill or use an API key itself.
+
+## Install
+
+```bash
+hermes skills install official/health/fitness-nutrition
+# Clone this repository, then copy the whole directory as a Hermes skill or load its SKILL.md in your agent.
+# If copying into ~/.hermes/skills/, keep coach.py, SKILL.md and README.md together.
+# In Telegram start a new session or use /reload-skills after installing.
+```
+
+Python 3.10+ and Pillow for PNG rendering (`uv venv && uv pip install pillow`, or install in an isolated environment). On Linux, a DejaVu Sans font is needed for Cyrillic PNG text. Logging and text reports use only Python stdlib. No bot token or GitHub secret is needed. Use a private data directory outside the cloned repo:
+
+```bash
+export COACH_DATA_DIR="$HOME/.local/share/fitness-coach-hermes"
+python3 coach.py target --kcal 2100              # example only; user chooses target
+python3 coach.py meal --name "Example lunch" --kcal 620 --protein 32 --fat 20 --carbs 70 --source user
+python3 coach.py workout --name "Example walk" --minutes 40
+python3 coach.py weight --kg 80.5
+python3 coach.py report
+python3 coach.py card --output "$HOME/.local/share/fitness-coach-hermes/week.png"
+```
+
+The target, example lunch and weight above are **synthetic examples**, not a prescription or the owner's data. Set a target only after the user explicitly chooses it. A food photo does not establish exact calories. Use weighed portions or packaging/USDA entries; label uncertain estimates.
+
+## Telegram
+
+In a conversation with the agent: ask «Покажи отчёт за неделю и отправь карточку сюда». The agent runs `report` + `card`, inspects the result and returns an image attachment using `MEDIA:/absolute/path/week.png` to the current chat. It does not need a separate bot when Hermes Telegram gateway is already connected. The card contains logged calories by day; the text report includes macros and weight if recorded. No automatic sends, reminders or public sharing.
+
+## Privacy / limitations
+
+- `private-data/`, `*.png`, `.env` and caches are gitignored. Data outside the repo is preferred. Logs are health-adjacent personal information; avoid putting them in GitHub even if the repo is private.
+- Journal writes are atomic with owner-only file permissions; this is not encrypted storage. Back it up securely if needed.
+- Reports count **logged meals**, not all food eaten. A blank day means no records, not fasting. The goal is user-supplied, not medically assigned.
+- If the user reports symptoms, a medical condition, an eating disorder, pregnancy, or significant pain, refer to a qualified professional rather than prescribing a regimen.
+
+## Tests
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Upstream source: NousResearch/hermes-agent, `optional-skills/health/fitness-nutrition` (checked at `c419cf7c864ac0ee511dbd9f7091a8bba0b567ee`). This project links to that MIT-licensed skill rather than copying it, and has no implied upstream endorsement. This repository is private and does not grant a public reuse license.

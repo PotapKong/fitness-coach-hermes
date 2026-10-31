@@ -1,0 +1,7 @@
+private-data/
+*.png
+.env
+__pycache__/
+*.pyc
+.venv/
+.shaw/
