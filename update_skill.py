@@ -141,6 +141,9 @@ def main():
     if not args.check:
         args.apply = True  # no-argument Hermes --script cron runs the updater
     target = args.target.expanduser().absolute()
+    if args.check:
+        update(args, target)  # truly read-only locally; the atomic pointer is safe to observe without a lock
+        return
     target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
     lock_path = target.parent / ".fitness-coach-update.lock"
     with lock_path.open("a+") as lock:

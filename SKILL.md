@@ -4,7 +4,7 @@ description: Use when tracking food, exercise and weight, creating private progr
 license: MIT
 compatibility: Python 3.10+ on POSIX (fcntl lock); Pillow and a Cyrillic font for PNG; USDA API network for food lookup; a local private data directory.
 metadata:
-  version: "0.8.1"
+  version: "0.8.2"
 ---
 
 # Fitness Coach for Hermes

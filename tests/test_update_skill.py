@@ -1,5 +1,8 @@
 import json
+import contextlib
+import io
 import pathlib
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -9,6 +12,16 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 
 class UpdaterTests(unittest.TestCase):
+    def test_check_has_no_local_filesystem_side_effects(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = pathlib.Path(tmp) / 'new-parent/fitness-coach-hermes'
+            with mock.patch.object(update_skill, 'remote_sha', return_value='a' * 40), \
+                 mock.patch.object(sys, 'argv', ['update_skill.py', '--check', '--target', str(target)]), \
+                 contextlib.redirect_stdout(io.StringIO()) as output:
+                update_skill.main()
+            self.assertIn('upstream update available', output.getvalue())
+            self.assertFalse(target.parent.exists())
+
     def test_catalog_and_package_are_valid(self):
         self.assertGreaterEqual(update_skill.validate(ROOT), 48)
 
