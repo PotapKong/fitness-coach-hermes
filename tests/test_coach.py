@@ -115,6 +115,26 @@ class CoachTests(unittest.TestCase):
         self.invoke('meal', '--date', '2026-11-01', '--name', 'Late meal', '--kcal', '100', '--source', 'photo-estimate')
         self.assertIsNone(json.loads(self.invoke('snapshot', '--date', '2026-11-01', '--scope', 'week'))['weekly_range_status'])
 
+    def test_visual_profile_and_actual_food_scene_facts(self):
+        with self.assertRaises(SystemExit):
+            self.invoke('visual-profile', '--style', 'bold-athletic', '--food-scene', 'playful')
+        self.invoke('visual-profile', '--style', 'bold-athletic', '--food-scene', 'playful', '--confirmed-by-user')
+        self.invoke('meal', '--date', '2026-10-31', '--name', 'Eggs and rye bread', '--kcal', '420', '--grams', '280', '--source', 'label')
+        self.invoke('meal', '--date', '2026-10-31', '--name', 'Lunch (ingredients unknown)', '--kcal', '600', '--source', 'user')
+        self.invoke('workout', '--date', '2026-10-31', '--name', 'Walk', '--minutes', '40')
+        day = json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'day'))
+        self.assertEqual(day['visual_preferences'], {'style': 'bold-athletic', 'food_scene': 'playful'})
+        self.assertEqual([x['name'] for x in day['recorded_food_items']], ['Eggs and rye bread', 'Lunch (ingredients unknown)'])
+        self.assertEqual(day['recorded_food_items'][0]['grams'], 280)
+        self.assertIsNone(day['recorded_food_items'][1]['grams'])
+        entry = json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'entry'))
+        self.assertEqual(entry['recorded_food_items'][0]['name'], 'Eggs and rye bread')
+        self.assertIsNone(entry['latest_entry'].get('grams'))  # latest item is a workout
+        self.assertEqual(day['recorded_workout_items'][0]['name'], 'Walk')
+        week = json.loads(self.invoke('snapshot', '--date', '2026-11-01', '--scope', 'week'))
+        self.assertEqual(week['recorded_food_items'], day['recorded_food_items'])
+        self.assertEqual(week['visual_preferences'], day['visual_preferences'])
+
     def test_usda_energy_units(self):
         sample = {'fdcId': 171287, 'description': 'Egg, whole, raw, fresh', 'foodNutrients': [
             {'nutrientName': 'Energy', 'unitName': 'kcal', 'value': 143.0},

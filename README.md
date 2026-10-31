@@ -9,6 +9,7 @@ hermes skills install official/health/fitness-nutrition
 git clone https://github.com/PotapKong/fitness-coach-hermes.git
 mkdir -p "$HOME/.hermes/skills/fitness-coach-hermes"
 cp fitness-coach-hermes/{SKILL.md,README.md,EVIDENCE.md,VISUAL.md,LICENSE,coach.py,food_lookup.py} "$HOME/.hermes/skills/fitness-coach-hermes/"
+cp -R fitness-coach-hermes/examples "$HOME/.hermes/skills/fitness-coach-hermes/"  # optional model style references
 # In Telegram start a new session or use /reload-skills after installing.
 ```
 
@@ -23,6 +24,7 @@ export COACH_DATA_DIR="$(mktemp -d)"  # demo only; do not mix with real data
 export SKILL_DIR="$HOME/.hermes/skills/fitness-coach-hermes"
 python3 "$SKILL_DIR/food_lookup.py" 'raw egg'  # inspect matching item, kcal unit, FDC ID and portion
 python3 "$SKILL_DIR/coach.py" target --kcal 2100 --weekly-avg-min 2000 --weekly-avg-max 2200 --confirmed-by-user  # synthetic example; owner chooses
+python3 "$SKILL_DIR/coach.py" visual-profile --style bold-athletic --food-scene playful --confirmed-by-user  # synthetic demo only
 python3 "$SKILL_DIR/coach.py" meal --name "Example lunch" --kcal 620 --protein 32 --fat 20 --carbs 70 --source user
 python3 "$SKILL_DIR/coach.py" food --fdc-id 171287 --grams 120  # only after confirming the food and portion
 python3 "$SKILL_DIR/coach.py" workout --name "Example walk" --minutes 40
@@ -50,7 +52,9 @@ In a conversation with the agent: ask «Покажи отчёт за недел�
 
 ## Visuals and AI rendering
 
-Three distinct **synthetic** GPT Image design references are included; no user's health data was used. They demonstrate card hierarchy, not an automatically generated or clinically validated report. See [entry receipt](examples/on-entry.webp), [day close](examples/day-close.webp), and [weekly review](examples/weekly-review.webp). The card agent must use `snapshot` plus explicit visual QA to make a new report; the images are not reusable numeric templates.
+Two different families of **synthetic** GPT Image design references are included; no user's health data was used. The original neutral/editorial family is archived as [entry](examples/on-entry.webp), [day](examples/day-close.webp), [week](examples/weekly-review.webp); its **empty weekly plate is a rejected motif, not a pattern to copy**. The new bold-athletic family shows actual **synthetically logged** food names in [entry](examples/bold-on-entry.png), [day](examples/bold-day-close.png), and [week](examples/bold-weekly-review.png); four of 18 named meal entries appear in its weekly scene, marked “часть записей”. These show art direction, not an automatically generated or clinically validated report. The card agent must use `snapshot` plus explicit visual QA to make a new card; example numbers and foods are not reusable templates.
+
+To individualize future cards, ask the owner to choose a visual style and food-scene mode, then run `visual-profile --style bold-athletic|high-energy|editorial|minimal|adaptive --food-scene literal|playful|abstract --confirmed-by-user`. `snapshot --scope entry|day|week` now provides the actual logged meal and workout labels, optional **confirmed** grams and the chosen visual preferences. Gender or weight does not determine the palette or food quantity. An empty plate is not used for unknown food; a bucket/mountain requires a playful opt-in, labelled metaphor, and named foods, never a size inferred from kcal. See [VISUAL.md](VISUAL.md).
 
 The built-in PNG is a deterministic data chart, not a diet-quality score. [VISUAL.md](VISUAL.md) defines three distinct AI-rendered card jobs (on-entry/day-end/week-end), exact-value QA and neutral/teal/amber color semantics. The CLI evaluates **recorded weekly-average energy** against a user-provided range only when all seven food days were owner-confirmed complete and none was photo-estimated. This is not a score of nutritional quality; without those conditions, use neutral colors and show coverage. Private health entries may be sent to an external image provider **only after separate informed consent**; otherwise render locally. Generated labels/bars are never the source of truth. For scheduled end-of-day/week delivery, configure the agent's own scheduler **after** agreeing on local timezone, times and destination; the skill does not create cron jobs automatically.
 

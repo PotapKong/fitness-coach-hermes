@@ -170,6 +170,16 @@ def trends(data, end, days=28):
 
 def snapshot(data, end, scope):
     """Canonical facts for distinct Telegram cards; no inferred health grades."""
+    def food_items(entries):
+        """Observed meal labels only; names are not parsed into ingredients."""
+        return [{'date': e['date'], 'name': e['name'], 'grams': e.get('grams'),
+                 'source': e.get('source'), 'logged_kcal': e.get('kcal')}
+                for e in entries if e['type'] == 'meal']
+
+    def workout_items(entries):
+        return [{'date': e['date'], 'name': e['name'], 'minutes': e['minutes']}
+                for e in entries if e['type'] == 'workout']
+
     if scope == 'week':
         start = end - timedelta(days=end.weekday())
         finish = start + timedelta(days=6)
@@ -192,6 +202,9 @@ def snapshot(data, end, scope):
                 'weekly_range_status': status,
                 'training_minutes_recorded': sum(r['workout_minutes'] for r in rows.values()),
                 'training_days_recorded': sum(bool(r['workouts']) for r in rows.values()),
+                'recorded_food_items': food_items(week_entries),
+                'recorded_workout_items': workout_items(week_entries),
+                'visual_preferences': data.get('visual_preferences'),
                 'weights_kg': [{'date': d, 'kg': r['weight']} for d, r in rows.items() if r['weight'] is not None],
                 'days': [{'date': d, 'logged_kcal': r['kcal'] if r['meals'] else None,
                           'food_complete': d in complete and bool(r['meals']), 'workout_minutes': r['workout_minutes'] if r['workouts'] else None} for d, r in rows.items()],
@@ -203,6 +216,9 @@ def snapshot(data, end, scope):
             'macros_g': {k: row[k] if row['meals'] and row['known'][k] == row['meals'] else None for k in ('protein', 'fat', 'carbs')},
             'micros_recorded': {k: {'amount': v, 'known_meals': row['micro_known'][k], 'total_meals': row['meals']} for k, v in row['micros'].items()},
             'food_entries': row['meals'], 'food_complete': d in data.get('food_complete_days', []),
+            'recorded_food_items': food_items(day_entries),
+            'recorded_workout_items': workout_items(day_entries),
+            'visual_preferences': data.get('visual_preferences'),
             'estimated_food_entries': sum(e['type'] == 'meal' and e.get('source') == 'photo-estimate' for e in day_entries),
             'training_minutes_recorded': row['workout_minutes'] if row['workouts'] else None,
             'weight_kg': row['weight'], 'note': 'Only recorded values; missing is unknown, not zero.'}
@@ -214,7 +230,7 @@ def snapshot(data, end, scope):
                                 'training_minutes_recorded': sum(r['workout_minutes'] for r in week_rows.values())}
     if scope == 'entry':
         latest = day_entries[-1] if day_entries else None
-        base['latest_entry'] = {k: latest.get(k) for k in ('type', 'name', 'kcal', 'minutes', 'kg', 'source') if k in latest} if latest else None
+        base['latest_entry'] = {k: latest.get(k) for k in ('type', 'name', 'grams', 'kcal', 'minutes', 'kg', 'source') if k in latest} if latest else None
     return base
 
 
@@ -324,6 +340,10 @@ def main(argv=None):
     t.add_argument('--weekly-avg-min', type=lambda s: number(s, positive=True))
     t.add_argument('--weekly-avg-max', type=lambda s: number(s, positive=True))
     t.add_argument('--confirmed-by-user', action='store_true', required=True, help='Only after explicit owner confirmation; not a medical recommendation')
+    vp = sub.add_parser('visual-profile', help='Store owner-chosen visual style, not inferred gender or body type')
+    vp.add_argument('--style', choices=('adaptive', 'bold-athletic', 'high-energy', 'editorial', 'minimal'), required=True)
+    vp.add_argument('--food-scene', choices=('literal', 'playful', 'abstract'), required=True)
+    vp.add_argument('--confirmed-by-user', action='store_true', required=True)
     m = sub.add_parser('meal', help='Log a confirmed meal estimate')
     m.add_argument('--date', type=day, default=date.today().isoformat())
     m.add_argument('--name', required=True)
@@ -331,6 +351,7 @@ def main(argv=None):
     for macro in ('protein', 'fat', 'carbs'):
         m.add_argument('--' + macro, type=number)
     m.add_argument('--source', choices=('label', 'usda', 'user', 'photo-estimate'), required=True)
+    m.add_argument('--grams', type=lambda s: number(s, positive=True), help='Confirmed food mass; never infer from calories')
     m.add_argument('--event-id', help='Stable external message ID; rejects retries')
     f = sub.add_parser('food', help='Log a weighed USDA item by FDC ID')
     f.add_argument('--date', type=day, default=date.today().isoformat())
@@ -366,7 +387,7 @@ def main(argv=None):
             r.add_argument('--scope', choices=('entry', 'day', 'week'), required=True)
     args = p.parse_args(argv)
     path = store_path(args)
-    if args.command in ('target', 'meal', 'food', 'workout', 'weight', 'close-day'):
+    if args.command in ('target', 'visual-profile', 'meal', 'food', 'workout', 'weight', 'close-day'):
         with write_lock(path):
             return execute(p, args, path)
     return execute(p, args, path)
@@ -383,10 +404,14 @@ def execute(p, args, path):
             p.error('Check owner-selected weekly-average range; these limits are not a prescription')
         data['targets']['kcal'] = args.kcal
         data['targets']['weekly_avg_kcal_range'] = [args.weekly_avg_min, args.weekly_avg_max] if args.weekly_avg_min is not None else None
+    elif args.command == 'visual-profile':
+        data['visual_preferences'] = {'style': args.style, 'food_scene': args.food_scene}
     elif args.command == 'meal':
         if not args.name.strip():
             p.error('Meal name cannot be blank')
-        add_entry(data, {'type': 'meal', 'date': args.date, 'name': args.name.strip(), 'kcal': args.kcal, 'protein': args.protein, 'fat': args.fat, 'carbs': args.carbs, 'source': args.source}, args.event_id)
+        if args.grams is not None and args.grams > 10000:
+            p.error('Check serving grams')
+        add_entry(data, {'type': 'meal', 'date': args.date, 'name': args.name.strip(), 'grams': args.grams, 'kcal': args.kcal, 'protein': args.protein, 'fat': args.fat, 'carbs': args.carbs, 'source': args.source}, args.event_id)
         data['food_complete_days'] = [d for d in data['food_complete_days'] if d != args.date]
     elif args.command == 'food':
         if args.fdc_id < 1 or args.grams > 10000:
