@@ -6,8 +6,9 @@ Private, local-first fitness journal and weekly progress card for Hermes agents.
 
 ```bash
 hermes skills install official/health/fitness-nutrition
-# Clone this repository, then copy the whole directory as a Hermes skill or load its SKILL.md in your agent.
-# If copying into ~/.hermes/skills/, keep coach.py, SKILL.md and README.md together.
+gh repo clone PotapKong/fitness-coach-hermes
+mkdir -p "$HOME/.hermes/skills/fitness-coach-hermes"
+cp fitness-coach-hermes/{SKILL.md,README.md,coach.py} "$HOME/.hermes/skills/fitness-coach-hermes/"
 # In Telegram start a new session or use /reload-skills after installing.
 ```
 
@@ -15,12 +16,13 @@ Python 3.10+ and Pillow for PNG rendering (`uv venv && uv pip install pillow`, o
 
 ```bash
 export COACH_DATA_DIR="$HOME/.local/share/fitness-coach-hermes"
-python3 coach.py target --kcal 2100              # example only; user chooses target
-python3 coach.py meal --name "Example lunch" --kcal 620 --protein 32 --fat 20 --carbs 70 --source user
-python3 coach.py workout --name "Example walk" --minutes 40
-python3 coach.py weight --kg 80.5
-python3 coach.py report
-python3 coach.py card --output "$HOME/.local/share/fitness-coach-hermes/week.png"
+export SKILL_DIR="$HOME/.hermes/skills/fitness-coach-hermes"
+python3 "$SKILL_DIR/coach.py" target --kcal 2100              # example only; user chooses target
+python3 "$SKILL_DIR/coach.py" meal --name "Example lunch" --kcal 620 --protein 32 --fat 20 --carbs 70 --source user
+python3 "$SKILL_DIR/coach.py" workout --name "Example walk" --minutes 40
+python3 "$SKILL_DIR/coach.py" weight --kg 80.5
+python3 "$SKILL_DIR/coach.py" report
+python3 "$SKILL_DIR/coach.py" card --output "$COACH_DATA_DIR/week.png"
 ```
 
 The target, example lunch and weight above are **synthetic examples**, not a prescription or the owner's data. Set a target only after the user explicitly chooses it. A food photo does not establish exact calories. Use weighed portions or packaging/USDA entries; label uncertain estimates.

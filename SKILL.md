@@ -2,7 +2,6 @@
 name: fitness-coach-hermes
 description: Use when tracking a person's workouts, meals, calories, weight and weekly progress with private local data, or sending a verified progress card to Telegram.
 version: 0.1.0
-
 metadata:
   hermes:
     tags: [fitness, nutrition, calorie-tracking, telegram, progress]
@@ -21,9 +20,11 @@ This is a **local-first logging/delivery companion** to the official Hermes `fit
 
 ## Workflow
 
+Resolve `SKILL_DIR` to the directory containing **this** SKILL.md (not the current working directory), then invoke `python3 "$SKILL_DIR/coach.py"`. Set `COACH_DATA_DIR` to a per-person private directory outside the repository. On this host the installed file is under `~/.hermes/skills/fitness-coach-hermes/`; another machine may use a different path.
+
 1. For exercise names, food facts and TDEE, load `fitness-nutrition` if installed (`hermes skills install official/health/fitness-nutrition` after reviewing its scope), use its sources and check units. Do not mistake its BMI/TDEE estimate for a diagnosis or a measured energy expenditure.
 2. Ask the user to confirm portions/macros before logging. Log a meal with an explicit source:
-   `python3 coach.py --data-dir "$COACH_DATA_DIR" meal --date YYYY-MM-DD --name "..." --kcal N --protein N --fat N --carbs N --source label|usda|user|photo-estimate`
+   `python3 "$SKILL_DIR/coach.py" --data-dir "$COACH_DATA_DIR" meal --date YYYY-MM-DD --name "..." --kcal N --protein N --fat N --carbs N --source label|usda|user|photo-estimate`
    For a USDA result, compute values for the actual weighed portion; include the FDC identifier and serving in the meal name if possible.
 3. Log exercise via `workout --name "..." --minutes N`, weight via `weight --kg N` and a user-approved goal via `target --kcal N`. The tool appends entries; if a correction is needed, do not append a duplicate—edit the exact record with the owner's consent or implement an audited correction command.
 4. For Telegram text run `report --date YYYY-MM-DD`; for a card run `card --date YYYY-MM-DD --output /absolute/private/path/card.png`. Inspect both; the report is based only on entered data and missing meals must not be treated as zero intake.
