@@ -1,4 +1,5 @@
 private-data/
+journal.json
 *.png
 .env
 __pycache__/
