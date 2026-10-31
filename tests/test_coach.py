@@ -28,7 +28,7 @@ class CoachTests(unittest.TestCase):
         self.temp.cleanup()
 
     def test_logging_report_and_png(self):
-        self.invoke('target', '--kcal', '2200')
+        self.invoke('target', '--kcal', '2200', '--confirmed-by-user')
         self.invoke('meal', '--date', '2026-10-31', '--name', 'Synthetic meal', '--kcal', '550', '--protein', '32', '--fat', '15', '--carbs', '70', '--source', 'user')
         self.invoke('workout', '--date', '2026-10-31', '--name', 'Walk', '--minutes', '30')
         self.invoke('weight', '--date', '2026-10-31', '--kg', '80')
@@ -55,7 +55,65 @@ class CoachTests(unittest.TestCase):
             coach.number('nan')
         with self.assertRaises(SystemExit):
             self.invoke('weight', '--kg', '800')
+        with self.assertRaises(SystemExit):
+            self.invoke('target', '--kcal', '1', '--confirmed-by-user')
+        with self.assertRaises(SystemExit):
+            self.invoke('target', '--kcal', '2000')
         self.assertFalse((self.root / 'journal.json').exists())
+
+    def test_exclusive_write_lock_and_private_directory(self):
+        path = self.root / 'journal.json'
+        with coach.write_lock(path):
+            with self.assertRaises(RuntimeError):
+                self.invoke('meal', '--name', 'Duplicate writer', '--kcal', '200', '--source', 'user')
+        self.assertFalse((self.root / '.journal.lock').exists())
+        self.invoke('meal', '--name', 'After lock', '--kcal', '200', '--source', 'user')
+        self.assertEqual(len(coach.load(path)['entries']), 1)
+
+    def test_retry_event_id_cannot_double_log(self):
+        args = ('meal', '--date', '2026-10-31', '--name', 'Breakfast', '--kcal', '320', '--source', 'user', '--event-id', 'tg:42:7')
+        self.invoke(*args)
+        with self.assertRaises(RuntimeError):
+            self.invoke(*args)
+        self.assertEqual(len(coach.load(self.root / 'journal.json')['entries']), 1)
+        self.assertFalse((self.root / '.journal.lock').exists())
+
+    def test_entry_day_week_snapshots_and_reopen(self):
+        self.invoke('meal', '--date', '2026-10-31', '--name', 'Example', '--kcal', '600', '--protein', '30', '--source', 'user')
+        entry = json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'entry'))
+        self.assertEqual(entry['latest_entry']['kcal'], 600)
+        self.assertFalse(entry['food_complete'])
+        self.invoke('close-day', '--date', '2026-10-31', '--confirmed-by-user')
+        day = json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'day'))
+        self.assertTrue(day['food_complete'])
+        self.assertEqual(day['macros_g']['protein'], 30)
+        self.assertIsNone(day['macros_g']['fat'])
+        self.assertEqual(day['week_to_date']['confirmed_complete_food_days'], 1)
+        week = json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'week'))
+        self.assertEqual(week['start'], '2026-10-26')
+        self.assertEqual(week['end'], '2026-11-01')
+        self.assertEqual(week['confirmed_complete_food_days'], 1)
+        self.assertEqual(week['average_logged_kcal_on_complete_days'], 600)
+        self.assertEqual(week['days'][0]['logged_kcal'], None)
+        self.invoke('meal', '--date', '2026-10-31', '--name', 'Later meal', '--kcal', '300', '--source', 'user')
+        self.assertFalse(json.loads(self.invoke('snapshot', '--date', '2026-10-31', '--scope', 'day'))['food_complete'])
+        with self.assertRaises(SystemExit):
+            self.invoke('close-day', '--date', '2026-10-30', '--confirmed-by-user')
+
+    def test_weekly_user_range_requires_seven_complete_days(self):
+        self.invoke('target', '--kcal', '2000', '--weekly-avg-min', '1900', '--weekly-avg-max', '2100', '--confirmed-by-user')
+        for day in range(26, 33):
+            d = f'2026-10-{day}' if day <= 31 else '2026-11-01'
+            self.invoke('meal', '--date', d, '--name', 'Synthetic day', '--kcal', '2000', '--source', 'label', '--event-id', f'demo:{d}')
+            if day <= 31:
+                self.invoke('close-day', '--date', d, '--confirmed-by-user')
+        week = json.loads(self.invoke('snapshot', '--date', '2026-11-01', '--scope', 'week'))
+        self.assertIsNone(week['weekly_range_status'])
+        self.invoke('close-day', '--date', '2026-11-01', '--confirmed-by-user')
+        week = json.loads(self.invoke('snapshot', '--date', '2026-11-01', '--scope', 'week'))
+        self.assertEqual(week['weekly_range_status'], 'within_user_range')
+        self.invoke('meal', '--date', '2026-11-01', '--name', 'Late meal', '--kcal', '100', '--source', 'photo-estimate')
+        self.assertIsNone(json.loads(self.invoke('snapshot', '--date', '2026-11-01', '--scope', 'week'))['weekly_range_status'])
 
     def test_usda_energy_units(self):
         sample = {'fdcId': 171287, 'description': 'Egg, whole, raw, fresh', 'foodNutrients': [
@@ -69,6 +127,16 @@ class CoachTests(unittest.TestCase):
         self.assertIsNone(result['per_100g']['fat_g'])
         sample['foodNutrients'] = [sample['foodNutrients'][1]]
         self.assertIsNone(food_lookup.food_nutrients(sample)['per_100g']['kcal'])
+
+    def test_usda_invalid_number_cannot_enter_journal(self):
+        for bad in (float('nan'), float('inf'), -1, True):
+            with self.subTest(bad=bad):
+                food = {'fdcId': 1, 'description': 'bad', 'foodNutrients': [
+                    {'nutrientName': 'Energy', 'unitName': 'kcal', 'value': bad}]}
+                with patch.object(food_lookup, 'by_id', side_effect=lambda _: food_lookup.food_nutrients(food)):
+                    with self.assertRaises(ValueError):
+                        self.invoke('food', '--fdc-id', '1', '--grams', '100')
+        self.assertFalse((self.root / 'journal.json').exists())
 
     def test_weighed_food_micros_activity_and_missing_macros(self):
         fixture = {'fdcId': 171287, 'description': 'Egg, whole, raw, fresh', 'foodNutrients': [

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Private, dependency-free coach log and Telegram-ready progress reports."""
 import argparse
+import contextlib
 import json
 import math
 import os
+import stat
 from datetime import date, timedelta
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -13,17 +15,40 @@ def store_path(args):
     return Path(args.data_dir).expanduser().resolve() / 'journal.json'
 
 
+def private_directory(path):
+    path.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if not path.is_dir() or stat.S_IMODE(path.stat().st_mode) & 0o077:
+        raise PermissionError('Data directory must be private (chmod 700)')
+
+
+@contextlib.contextmanager
+def write_lock(path):
+    """Exclusive lock around the entire read/modify/write cycle."""
+    private_directory(path.parent)
+    lock = path.parent / '.journal.lock'
+    try:
+        fd = os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        raise RuntimeError('Journal is locked by another writer; check before retrying') from None
+    try:
+        os.close(fd)
+        yield
+    finally:
+        lock.unlink()
+
+
 def load(path):
     if not path.exists():
-        return {'version': 1, 'targets': {}, 'entries': []}
+        return {'version': 1, 'targets': {}, 'entries': [], 'food_complete_days': []}
     value = json.loads(path.read_text(encoding='utf-8'))
     if value.get('version') != 1 or not isinstance(value.get('entries'), list):
         raise ValueError('Unsupported journal format')
+    value.setdefault('food_complete_days', [])
     return value
 
 
 def save(path, value):
-    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    private_directory(path.parent)
     with NamedTemporaryFile('w', encoding='utf-8', dir=path.parent, delete=False) as f:
         tmp = Path(f.name)
         os.chmod(tmp, 0o600)
@@ -52,6 +77,16 @@ def number(value, *, positive=False):
     if not math.isfinite(n) or n < 0 or (positive and n == 0):
         raise argparse.ArgumentTypeError('Use a finite positive value' if positive else 'Use a finite nonnegative value')
     return n
+
+
+def add_entry(data, entry, event_id=None):
+    if event_id:
+        if len(event_id) > 128 or any(ord(char) < 33 or ord(char) > 126 for char in event_id):
+            raise ValueError('Event ID must be printable ASCII without spaces (max 128)')
+        if any(e.get('event_id') == event_id for e in data['entries']):
+            raise RuntimeError('Event ID already recorded; no duplicate was added')
+        entry['event_id'] = event_id
+    data['entries'].append(entry)
 
 
 def day(value):
@@ -133,14 +168,73 @@ def trends(data, end, days=28):
                         'training_minutes': r['workout_minutes'] if r['workouts'] else None, 'weight_kg': r['weight']} for d, r in rows.items()]}
 
 
+def snapshot(data, end, scope):
+    """Canonical facts for distinct Telegram cards; no inferred health grades."""
+    if scope == 'week':
+        start = end - timedelta(days=end.weekday())
+        finish = start + timedelta(days=6)
+        rows = aggregate(data, finish, 7)
+        complete = set(data.get('food_complete_days', []))
+        complete_rows = [r for d, r in rows.items() if d in complete and r['meals']]
+        week_entries = [e for e in data['entries'] if start.isoformat() <= e['date'] <= finish.isoformat()]
+        estimated = sum(e['type'] == 'meal' and e.get('source') == 'photo-estimate' for e in week_entries)
+        mean = round(sum(r['kcal'] for r in complete_rows) / len(complete_rows), 1) if complete_rows else None
+        bounds = data.get('targets', {}).get('weekly_avg_kcal_range')
+        status = None
+        if bounds and len(complete_rows) == 7 and not estimated:
+            status = 'within_user_range' if bounds[0] <= mean <= bounds[1] else 'outside_user_range'
+        return {'kind': 'week', 'start': start.isoformat(), 'end': finish.isoformat(),
+                'recorded_food_days': sum(bool(r['meals']) for r in rows.values()),
+                'confirmed_complete_food_days': len(complete_rows), 'days_in_period': 7,
+                'average_logged_kcal_on_complete_days': mean,
+                'estimated_food_entries': estimated,
+                'user_weekly_average_kcal_range': bounds,
+                'weekly_range_status': status,
+                'training_minutes_recorded': sum(r['workout_minutes'] for r in rows.values()),
+                'training_days_recorded': sum(bool(r['workouts']) for r in rows.values()),
+                'weights_kg': [{'date': d, 'kg': r['weight']} for d, r in rows.items() if r['weight'] is not None],
+                'days': [{'date': d, 'logged_kcal': r['kcal'] if r['meals'] else None,
+                          'food_complete': d in complete and bool(r['meals']), 'workout_minutes': r['workout_minutes'] if r['workouts'] else None} for d, r in rows.items()],
+                'note': 'Activity intensity and full-week coverage unverified; no clinical or diet-quality grade.'}
+    d = end.isoformat()
+    day_entries = [e for e in data['entries'] if e['date'] == d]
+    row = aggregate(data, end, 1)[d]
+    base = {'kind': scope, 'date': d, 'logged_kcal': row['kcal'] if row['meals'] else None,
+            'macros_g': {k: row[k] if row['meals'] and row['known'][k] == row['meals'] else None for k in ('protein', 'fat', 'carbs')},
+            'micros_recorded': {k: {'amount': v, 'known_meals': row['micro_known'][k], 'total_meals': row['meals']} for k, v in row['micros'].items()},
+            'food_entries': row['meals'], 'food_complete': d in data.get('food_complete_days', []),
+            'estimated_food_entries': sum(e['type'] == 'meal' and e.get('source') == 'photo-estimate' for e in day_entries),
+            'training_minutes_recorded': row['workout_minutes'] if row['workouts'] else None,
+            'weight_kg': row['weight'], 'note': 'Only recorded values; missing is unknown, not zero.'}
+    if scope == 'day':
+        week_rows = aggregate(data, end, end.weekday() + 1)
+        base['week_to_date'] = {'start': next(iter(week_rows)), 'end': d,
+                                'logged_food_days': sum(bool(r['meals']) for r in week_rows.values()),
+                                'confirmed_complete_food_days': sum(day in data.get('food_complete_days', []) for day in week_rows),
+                                'training_minutes_recorded': sum(r['workout_minutes'] for r in week_rows.values())}
+    if scope == 'entry':
+        latest = day_entries[-1] if day_entries else None
+        base['latest_entry'] = {k: latest.get(k) for k in ('type', 'name', 'kcal', 'minutes', 'kg', 'source') if k in latest} if latest else None
+    return base
+
+
 def render_png(data, end, path, view='nutrition', nutrient='iron_mg'):
     """Render exact logged values, not a generative approximation."""
     from PIL import Image, ImageDraw, ImageFont
     rows = aggregate(data, end)
     im = Image.new('RGB', (1080, 1080), '#101827')
     draw = ImageDraw.Draw(im)
-    font_path = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
-    font = lambda size: ImageFont.truetype(font_path, size)
+    font_path = os.environ.get('COACH_FONT_PATH') or next((p for p in (
+        '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+        '/Library/Fonts/Arial Unicode.ttf',
+        'C:/Windows/Fonts/arial.ttf',
+        'DejaVuSans.ttf',
+    ) if Path(p).exists() or p == 'DejaVuSans.ttf'), 'DejaVuSans.ttf')
+    try:
+        font = lambda size: ImageFont.truetype(font_path, size)
+        font(24)
+    except OSError:
+        raise RuntimeError('No Cyrillic font found; set COACH_FONT_PATH to a local TTF') from None
     draw.text((75, 60), 'Питание и тренировки', font=font(48), fill='white')
     draw.text((75, 130), f'Неделя до {end.isoformat()}', font=font(29), fill='#aab8c8')
     target = data['targets'].get('kcal')
@@ -223,10 +317,13 @@ def render_png(data, end, path, view='nutrition', nutrient='iron_mg'):
 
 def main(argv=None):
     p = argparse.ArgumentParser(description='Personal fitness journal; no network, no automatic messages')
-    p.add_argument('--data-dir', default=os.environ.get('COACH_DATA_DIR', './private-data'))
+    p.add_argument('--data-dir', default=os.environ.get('COACH_DATA_DIR', '~/.local/share/fitness-coach-hermes'))
     sub = p.add_subparsers(dest='command', required=True)
     t = sub.add_parser('target', help='Set user-approved daily kcal goal')
     t.add_argument('--kcal', required=True, type=lambda s: number(s, positive=True))
+    t.add_argument('--weekly-avg-min', type=lambda s: number(s, positive=True))
+    t.add_argument('--weekly-avg-max', type=lambda s: number(s, positive=True))
+    t.add_argument('--confirmed-by-user', action='store_true', required=True, help='Only after explicit owner confirmation; not a medical recommendation')
     m = sub.add_parser('meal', help='Log a confirmed meal estimate')
     m.add_argument('--date', type=day, default=date.today().isoformat())
     m.add_argument('--name', required=True)
@@ -234,10 +331,12 @@ def main(argv=None):
     for macro in ('protein', 'fat', 'carbs'):
         m.add_argument('--' + macro, type=number)
     m.add_argument('--source', choices=('label', 'usda', 'user', 'photo-estimate'), required=True)
+    m.add_argument('--event-id', help='Stable external message ID; rejects retries')
     f = sub.add_parser('food', help='Log a weighed USDA item by FDC ID')
     f.add_argument('--date', type=day, default=date.today().isoformat())
     f.add_argument('--fdc-id', type=int, required=True)
     f.add_argument('--grams', type=lambda s: number(s, positive=True), required=True)
+    f.add_argument('--event-id', help='Stable external message ID; rejects retries')
     w = sub.add_parser('workout')
     w.add_argument('--date', type=day, default=date.today().isoformat())
     w.add_argument('--name', required=True)
@@ -245,10 +344,15 @@ def main(argv=None):
     w.add_argument('--sets', type=int)
     w.add_argument('--reps', type=int)
     w.add_argument('--load-kg', type=number)
+    w.add_argument('--event-id', help='Stable external message ID; rejects retries')
     wt = sub.add_parser('weight')
     wt.add_argument('--date', type=day, default=date.today().isoformat())
     wt.add_argument('--kg', type=lambda s: number(s, positive=True), required=True)
-    for cmd in ('report', 'card', 'trends'):
+    wt.add_argument('--event-id', help='Stable external message ID; rejects retries')
+    close = sub.add_parser('close-day', help='Confirm all food for a date was logged')
+    close.add_argument('--date', type=day, default=date.today().isoformat())
+    close.add_argument('--confirmed-by-user', action='store_true', required=True)
+    for cmd in ('report', 'card', 'trends', 'snapshot'):
         r = sub.add_parser(cmd)
         r.add_argument('--date', type=day, default=date.today().isoformat())
         if cmd == 'trends':
@@ -258,15 +362,32 @@ def main(argv=None):
             r.add_argument('--view', choices=('nutrition', 'activity', 'micros', 'micro-trend'), default='nutrition')
             from food_lookup import MICROS
             r.add_argument('--nutrient', choices=[key for key, _ in MICROS.values()], default='iron_mg')
+        if cmd == 'snapshot':
+            r.add_argument('--scope', choices=('entry', 'day', 'week'), required=True)
     args = p.parse_args(argv)
     path = store_path(args)
+    if args.command in ('target', 'meal', 'food', 'workout', 'weight', 'close-day'):
+        with write_lock(path):
+            return execute(p, args, path)
+    return execute(p, args, path)
+
+
+def execute(p, args, path):
     data = load(path)
     if args.command == 'target':
+        if not 1200 <= args.kcal <= 5000:
+            p.error('Target outside conservative adult input range; consult a qualified professional. This range is not a prescription.')
+        if (args.weekly_avg_min is None) != (args.weekly_avg_max is None):
+            p.error('Set both weekly-average bounds or neither')
+        if args.weekly_avg_min is not None and not (1200 <= args.weekly_avg_min <= args.weekly_avg_max <= 5000):
+            p.error('Check owner-selected weekly-average range; these limits are not a prescription')
         data['targets']['kcal'] = args.kcal
+        data['targets']['weekly_avg_kcal_range'] = [args.weekly_avg_min, args.weekly_avg_max] if args.weekly_avg_min is not None else None
     elif args.command == 'meal':
         if not args.name.strip():
             p.error('Meal name cannot be blank')
-        data['entries'].append({'type': 'meal', 'date': args.date, 'name': args.name.strip(), 'kcal': args.kcal, 'protein': args.protein, 'fat': args.fat, 'carbs': args.carbs, 'source': args.source})
+        add_entry(data, {'type': 'meal', 'date': args.date, 'name': args.name.strip(), 'kcal': args.kcal, 'protein': args.protein, 'fat': args.fat, 'carbs': args.carbs, 'source': args.source}, args.event_id)
+        data['food_complete_days'] = [d for d in data['food_complete_days'] if d != args.date]
     elif args.command == 'food':
         if args.fdc_id < 1 or args.grams > 10000:
             p.error('Check FDC ID and serving grams')
@@ -276,23 +397,31 @@ def main(argv=None):
         if values['kcal'] is None or not item['description']:
             p.error('USDA item has no usable kcal or description; nothing logged')
         factor = args.grams / 100
-        data['entries'].append({'type': 'meal', 'date': args.date, 'name': item['description'], 'fdc_id': args.fdc_id, 'grams': args.grams, 'source': 'usda', 'kcal': values['kcal'] * factor, 'protein': values['protein_g'] * factor if values['protein_g'] is not None else None, 'fat': values['fat_g'] * factor if values['fat_g'] is not None else None, 'carbs': values['carbs_g'] * factor if values['carbs_g'] is not None else None, 'micros': {key: value * factor for key, value in values['micros'].items()}})
+        add_entry(data, {'type': 'meal', 'date': args.date, 'name': item['description'], 'fdc_id': args.fdc_id, 'grams': args.grams, 'source': 'usda', 'kcal': values['kcal'] * factor, 'protein': values['protein_g'] * factor if values['protein_g'] is not None else None, 'fat': values['fat_g'] * factor if values['fat_g'] is not None else None, 'carbs': values['carbs_g'] * factor if values['carbs_g'] is not None else None, 'micros': {key: value * factor for key, value in values['micros'].items()}}, args.event_id)
+        data['food_complete_days'] = [d for d in data['food_complete_days'] if d != args.date]
     elif args.command == 'workout':
         if not args.name.strip():
             p.error('Workout name cannot be blank')
         strength = (args.sets, args.reps, args.load_kg)
         if any(x is not None for x in strength) and (any(x is None for x in strength) or args.sets < 1 or args.reps < 1):
             p.error('For strength work provide positive --sets, --reps and nonnegative --load-kg together')
-        data['entries'].append({'type': 'workout', 'date': args.date, 'name': args.name.strip(), 'minutes': args.minutes, 'sets': args.sets, 'reps': args.reps, 'load_kg': args.load_kg})
+        add_entry(data, {'type': 'workout', 'date': args.date, 'name': args.name.strip(), 'minutes': args.minutes, 'sets': args.sets, 'reps': args.reps, 'load_kg': args.load_kg}, args.event_id)
     elif args.command == 'weight':
         if args.kg > 500:
             p.error('Check weight units (expected kg)')
-        data['entries'].append({'type': 'weight', 'date': args.date, 'kg': args.kg})
+        add_entry(data, {'type': 'weight', 'date': args.date, 'kg': args.kg}, args.event_id)
+    elif args.command == 'close-day':
+        if not any(e['type'] == 'meal' and e['date'] == args.date for e in data['entries']):
+            p.error('Cannot close a day without food records; missing is unknown')
+        data['food_complete_days'] = sorted(set(data['food_complete_days']) | {args.date})
     elif args.command == 'report':
         print(telegram_text(data, date.fromisoformat(args.date)))
         return
     elif args.command == 'trends':
         print(json.dumps(trends(data, date.fromisoformat(args.date), args.days), ensure_ascii=False, indent=2))
+        return
+    elif args.command == 'snapshot':
+        print(json.dumps(snapshot(data, date.fromisoformat(args.date), args.scope), ensure_ascii=False, indent=2, allow_nan=False))
         return
     elif args.command == 'card':
         render_png(data, date.fromisoformat(args.date), args.output, args.view, args.nutrient)

@@ -1,10 +1,10 @@
 ---
 name: fitness-coach-hermes
-description: Use when tracking a person's workouts, meals, calories, weight and weekly progress with private local data, or sending a verified progress card to Telegram.
-version: 0.2.0
+description: Use when tracking food, exercise and weight, or making an on-entry, daily or weekly Telegram progress card with a private local journal.
+license: MIT
+compatibility: Python 3.10+; Pillow and a Cyrillic font for PNG; USDA API network for food lookup; a local private data directory.
 metadata:
-  hermes:
-    tags: [fitness, nutrition, calorie-tracking, telegram, progress]
+  version: "0.3.0"
 ---
 
 # Fitness Coach for Hermes
@@ -18,20 +18,22 @@ This is a **portable Agent Skill** and local-first logging/delivery companion to
 - Daily calories from a food photo are an **uncertain estimate**, especially for portions, oils and sauces. Ask for package labels/weights or the user's confirmation. State source and uncertainty; do not fabricate exact macros. USDA entries are per 100 g; scale by a confirmed portion using a calculator tool, not mental arithmetic.
 - Keep medical and personal details out of the Telegram card. Send only to the clearly specified chat/topic when the user requests delivery, never to a group or third party by default.
 - Use population guidance only with context, not as a personal prescription; do not set a default deficit, supplement dose or forced training progression. A micronutrient chart cannot diagnose deficiency. See `EVIDENCE.md` for primary sources, scope and compared skills.
+- For a more polished AI-generated report, follow `VISUAL.md` exactly: explicit consent before sending private records to an external image service, exact-data readback, and neutral colors unless a user-approved **weekly-average range** and all seven confirmed-complete food days justify a status. The code compares recorded energy to a user range but does not score diet quality. Never call an attractive image a validated chart without checking every value and bar.
 
 ## Workflow
 
-Resolve `SKILL_DIR` to the directory containing **this** SKILL.md (not the current working directory), then invoke `python3 "$SKILL_DIR/coach.py"`. Set `COACH_DATA_DIR` to a per-person private directory outside the repository. On this host the installed file is under `~/.hermes/skills/fitness-coach-hermes/`; another machine may use a different path. This repository is **private**: other agents need explicit GitHub access or a copy from the owner, not just its URL. Use a single writer per journal; parallel agents can overwrite updates.
+Resolve `SKILL_DIR` to the directory containing **this** SKILL.md (not the current working directory), then invoke `python3 "$SKILL_DIR/coach.py"`. Set `COACH_DATA_DIR` to a per-person private directory outside the public repository. On Hermes the installed file normally lives under `~/.hermes/skills/fitness-coach-hermes/`; other agents may use different paths. The code is public, but journal data remains local. The CLI rejects concurrent writers via a lock; use a stable `--event-id` on each incoming log message to prevent retry duplicates.
 
 1. For exercise names and TDEE, load `fitness-nutrition` if installed (`hermes skills install official/health/fitness-nutrition` after reviewing its scope). Do not mistake its BMI/TDEE estimate for a diagnosis or a measured energy expenditure. **Do not use upstream `nutrition_search.py` for calories:** it selects nutrients by name only and can mistake kJ for kcal (e.g. USDA FDC 171287, 599 kJ vs 143 kcal). For food data run `python3 "$SKILL_DIR/food_lookup.py" "food name"`, which matches energy by kcal unit. It uses `DEMO_KEY` unless `USDA_API_KEY` is set. Never convert a null nutrient to zero.
 2. Ask the user to confirm portions/macros before logging. Log a meal with an explicit source:
    `python3 "$SKILL_DIR/coach.py" --data-dir "$COACH_DATA_DIR" meal --date YYYY-MM-DD --name "..." --kcal N --protein N --fat N --carbs N --source label|usda|user|photo-estimate`
    For a USDA result, compute values for the actual weighed portion; include the FDC identifier and serving in the meal name if possible.
 3. Log a weighed USDA food with `food --fdc-id ID --grams G` only after matching the exact product/preparation; this records units, portion, macros and available micronutrients. For a manual estimate use `meal` and mark the source. Missing values remain unknown (`null`), not zero. Do not equate one database entry with a whole dish or treat `0` on an incomplete log as actual intake.
-4. Log exercise via `workout --name "..." --minutes N` (optionally all of `--sets N --reps N --load-kg N`), weight via `weight --kg N` and a user-approved goal via `target --kcal N`. The tool appends entries; if a correction is needed, do not append a duplicate—edit the exact record with the owner's consent or implement an audited correction command.
-5. For Telegram text run `report --date YYYY-MM-DD`; for 7/14/28/90-day machine-readable dynamics run `trends --date YYYY-MM-DD --days N`. For cards run `card --date YYYY-MM-DD --view nutrition|activity|micros|micro-trend --nutrient iron_mg --output /absolute/private/path/card.png`. Inspect rendered numbers, legends, missing days and current user's privacy. `micros` shows recorded amounts only; `micro-trend` scales bars to the *maximum recorded*, not to an RDA. Never diagnose a deficiency from a journal or suggest supplements/doses from these charts.
-6. When the user asks for a Telegram update, send the **verified card** as a native image to the exact chat/thread with a short text summary. In a direct Hermes reply, `MEDIA:/absolute/private/path/card.png` sends a standalone image. For other agents use their native attachment tool. For a different destination use a supported, verified route and read it back. Do not assume `MEDIA:` plus body becomes a photo caption.
-7. Never silently schedule reminders or send the health history to another service. No repository push should contain `private-data/` or generated cards.
+4. Log exercise via `workout --name "..." --minutes N` (optionally all of `--sets N --reps N --load-kg N`), weight via `weight --kg N`. Set `target --kcal N --confirmed-by-user` only for an adult after the owner chooses it; optionally include both `--weekly-avg-min N --weekly-avg-max N` for an owner-chosen weekly-average energy range. The CLI rejects outlier inputs but does **not** declare accepted values safe. If a correction is needed, never add a duplicate; obtain consent and update the exact record with an audited process. Repeated `--event-id` is refused.
+5. On **every new entry**, run `snapshot --scope entry --date YYYY-MM-DD` and return a concise receipt plus today's recorded subtotal; only send a GPT Image card if the owner opted in to external image processing. At **day end**, run `snapshot --scope day` for today's entries plus a short Monday-to-today line; run `close-day --confirmed-by-user` only if the owner confirms all food is logged. At **week end** (ISO Monday–Sunday), run `snapshot --scope week`; compare observed activity only to verified population guidance with intensity context, never turn daily nutrient references into a weekly allowance. See `VISUAL.md` for distinct card art directions and data-readback gates. Never set up scheduled delivery without timezone, time and destination approval.
+6. For a local text report run `report --date YYYY-MM-DD`; for 7/14/28/90-day machine-readable dynamics run `trends --date YYYY-MM-DD --days N`. For a deterministic fallback card run `card --date YYYY-MM-DD --view nutrition|activity|micros|micro-trend --nutrient iron_mg --output /absolute/private/path/card.png`. Inspect numbers, missing days and privacy. `micro-trend` scales to recorded max, not RDA. Never diagnose deficiency or suggest supplements/doses from the journal.
+7. When the user asks for a Telegram update, send the **verified card** as a native image to the exact chat/thread with a short text summary. In a direct Hermes reply, `MEDIA:/absolute/private/path/card.png` sends a standalone image. For other agents use their native attachment tool. For a different destination use a supported, verified route and read it back. Do not assume `MEDIA:` plus body becomes a photo caption.
+8. Never silently schedule reminders or send the health history to another service. No repository push should contain `private-data/` or generated cards.
 
 ## Delivery and validation
 

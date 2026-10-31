@@ -2,6 +2,7 @@
 """USDA food lookup: explicitly select kcal, never confuse kJ with kcal."""
 import argparse
 import json
+import math
 import os
 import urllib.parse
 import urllib.error
@@ -29,6 +30,11 @@ def fields(food):
 
 def food_nutrients(food):
     nutrients = list(fields(food))
+    relevant = {'Energy', 'Protein', 'Total lipid (fat)', 'Carbohydrate, by difference'}
+    for identifier, name, _, value in nutrients:
+        if (identifier in MICROS or name in relevant) and value is not None:
+            if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+                raise ValueError('USDA returned an invalid nutrient amount; nothing logged')
     def pick(name, unit):
         values = [value for _, n, u, value in nutrients if n == name and u == unit.lower() and isinstance(value, (int, float))]
         return values[0] if values else None
