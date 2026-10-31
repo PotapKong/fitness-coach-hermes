@@ -9,7 +9,7 @@ metadata:
 
 # Fitness Coach for Hermes
 
-This is a **local-first logging/delivery companion** to the official Hermes `fitness-nutrition` skill (`official/health/fitness-nutrition`). Install both packages separately. The upstream skill provides exercise guidance, USDA food lookup and offline TDEE calculators; this package records user-confirmed values and creates a legible weekly card. Never claim this companion itself verified foods, diagnosed a condition, or sent a message automatically.
+This is a **local-first logging/delivery companion** to the official Hermes `fitness-nutrition` skill (`official/health/fitness-nutrition`). Install both packages separately. The upstream skill provides exercise guidance and offline TDEE calculators; this package provides a unit-checked USDA food lookup, records user-confirmed values and creates a legible weekly card. Never claim this companion itself diagnosed a condition or sent a message automatically.
 
 ## First-use safety and consent
 
@@ -22,7 +22,7 @@ This is a **local-first logging/delivery companion** to the official Hermes `fit
 
 Resolve `SKILL_DIR` to the directory containing **this** SKILL.md (not the current working directory), then invoke `python3 "$SKILL_DIR/coach.py"`. Set `COACH_DATA_DIR` to a per-person private directory outside the repository. On this host the installed file is under `~/.hermes/skills/fitness-coach-hermes/`; another machine may use a different path.
 
-1. For exercise names, food facts and TDEE, load `fitness-nutrition` if installed (`hermes skills install official/health/fitness-nutrition` after reviewing its scope), use its sources and check units. Do not mistake its BMI/TDEE estimate for a diagnosis or a measured energy expenditure.
+1. For exercise names and TDEE, load `fitness-nutrition` if installed (`hermes skills install official/health/fitness-nutrition` after reviewing its scope). Do not mistake its BMI/TDEE estimate for a diagnosis or a measured energy expenditure. **Do not use upstream `nutrition_search.py` for calories:** it selects nutrients by name only and can mistake kJ for kcal (e.g. USDA FDC 171287, 599 kJ vs 143 kcal). For food data run `python3 "$SKILL_DIR/food_lookup.py" "food name"`, which matches energy by kcal unit. It uses `DEMO_KEY` unless `USDA_API_KEY` is set. Never convert a null nutrient to zero.
 2. Ask the user to confirm portions/macros before logging. Log a meal with an explicit source:
    `python3 "$SKILL_DIR/coach.py" --data-dir "$COACH_DATA_DIR" meal --date YYYY-MM-DD --name "..." --kcal N --protein N --fat N --carbs N --source label|usda|user|photo-estimate`
    For a USDA result, compute values for the actual weighed portion; include the FDC identifier and serving in the meal name if possible.

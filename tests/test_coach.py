@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import coach
+import food_lookup
 
 
 class CoachTests(unittest.TestCase):
@@ -52,6 +53,19 @@ class CoachTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.invoke('weight', '--kg', '800')
         self.assertFalse((self.root / 'journal.json').exists())
+
+    def test_usda_energy_units(self):
+        sample = {'fdcId': 171287, 'description': 'Egg, whole, raw, fresh', 'foodNutrients': [
+            {'nutrientName': 'Energy', 'unitName': 'kcal', 'value': 143.0},
+            {'nutrientName': 'Energy', 'unitName': 'kJ', 'value': 599.0},
+            {'nutrientName': 'Protein', 'unitName': 'g', 'value': 12.6},
+        ]}
+        result = food_lookup.food_nutrients(sample)
+        self.assertEqual(result['per_100g']['kcal'], 143)
+        self.assertEqual(result['per_100g']['protein_g'], 12.6)
+        self.assertIsNone(result['per_100g']['fat_g'])
+        sample['foodNutrients'] = [sample['foodNutrients'][1]]
+        self.assertIsNone(food_lookup.food_nutrients(sample)['per_100g']['kcal'])
 
 
 if __name__ == '__main__':

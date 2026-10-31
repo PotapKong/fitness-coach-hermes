@@ -1,6 +1,6 @@
 # Fitness Coach for Hermes
 
-Private, local-first fitness journal and weekly progress card for Hermes agents. Complements the official [`fitness-nutrition`](https://github.com/NousResearch/hermes-agent/tree/main/optional-skills/health/fitness-nutrition) skill (exercise guidance, wger, USDA lookup, calculators); it does **not** bundle that skill or use an API key itself.
+Private, local-first fitness journal and weekly progress card for Hermes agents. Complements the official [`fitness-nutrition`](https://github.com/NousResearch/hermes-agent/tree/main/optional-skills/health/fitness-nutrition) skill (exercise guidance, wger, calculators); it does **not** bundle that skill. Its own food lookup uses USDA's free `DEMO_KEY` by default, with an optional `USDA_API_KEY`.
 
 ## Install
 
@@ -8,15 +8,16 @@ Private, local-first fitness journal and weekly progress card for Hermes agents.
 hermes skills install official/health/fitness-nutrition
 gh repo clone PotapKong/fitness-coach-hermes
 mkdir -p "$HOME/.hermes/skills/fitness-coach-hermes"
-cp fitness-coach-hermes/{SKILL.md,README.md,coach.py} "$HOME/.hermes/skills/fitness-coach-hermes/"
+cp fitness-coach-hermes/{SKILL.md,README.md,coach.py,food_lookup.py} "$HOME/.hermes/skills/fitness-coach-hermes/"
 # In Telegram start a new session or use /reload-skills after installing.
 ```
 
-Python 3.10+ and Pillow for PNG rendering (`uv venv && uv pip install pillow`, or install in an isolated environment). On Linux, a DejaVu Sans font is needed for Cyrillic PNG text. Logging and text reports use only Python stdlib. No bot token or GitHub secret is needed. Use a private data directory outside the cloned repo:
+Python 3.10+ and Pillow for PNG rendering (`uv venv && uv pip install pillow`, or install in an isolated environment). On Linux, a DejaVu Sans font is needed for Cyrillic PNG text. Logging, food lookup and text reports use Python stdlib. No bot token or GitHub secret is needed. Use a private data directory outside the cloned repo:
 
 ```bash
 export COACH_DATA_DIR="$HOME/.local/share/fitness-coach-hermes"
 export SKILL_DIR="$HOME/.hermes/skills/fitness-coach-hermes"
+python3 "$SKILL_DIR/food_lookup.py" 'raw egg'  # inspect matching item, kcal unit, FDC ID and portion
 python3 "$SKILL_DIR/coach.py" target --kcal 2100              # example only; user chooses target
 python3 "$SKILL_DIR/coach.py" meal --name "Example lunch" --kcal 620 --protein 32 --fat 20 --carbs 70 --source user
 python3 "$SKILL_DIR/coach.py" workout --name "Example walk" --minutes 40
@@ -26,6 +27,8 @@ python3 "$SKILL_DIR/coach.py" card --output "$COACH_DATA_DIR/week.png"
 ```
 
 The target, example lunch and weight above are **synthetic examples**, not a prescription or the owner's data. Set a target only after the user explicitly chooses it. A food photo does not establish exact calories. Use weighed portions or packaging/USDA entries; label uncertain estimates.
+
+Important upstream caveat: the official `nutrition_search.py` currently maps nutrients by name and can output kJ as kcal when both Energy units occur (USDA FDC 171287: 599 kJ vs 143 kcal per 100 g). Use this repository's `food_lookup.py`, which filters explicitly for `unitName=kcal`; a missing kcal value remains null.
 
 ## Telegram
 
