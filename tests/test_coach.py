@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import subprocess
 import tempfile
 import unittest
 import urllib.error
@@ -67,7 +68,7 @@ class CoachTests(unittest.TestCase):
         with coach.write_lock(path):
             with self.assertRaises(RuntimeError):
                 self.invoke('meal', '--name', 'Duplicate writer', '--kcal', '200', '--source', 'user')
-        self.assertFalse((self.root / '.journal.lock').exists())
+        self.assertEqual((self.root / '.journal.lock').stat().st_mode & 0o777, 0o600)
         self.invoke('meal', '--name', 'After lock', '--kcal', '200', '--source', 'user')
         self.assertEqual(len(coach.load(path)['entries']), 1)
 
@@ -77,7 +78,14 @@ class CoachTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.invoke(*args)
         self.assertEqual(len(coach.load(self.root / 'journal.json')['entries']), 1)
-        self.assertFalse((self.root / '.journal.lock').exists())
+        self.assertEqual((self.root / '.journal.lock').stat().st_mode & 0o777, 0o600)
+
+    def test_crashed_writer_does_not_leave_stale_lock(self):
+        path = self.root / 'journal.json'
+        code = 'import os,sys,coach; from pathlib import Path;\nwith coach.write_lock(Path(sys.argv[1])): os._exit(0)'
+        subprocess.run([sys.executable, '-c', code, str(path)], check=True, cwd=Path(__file__).resolve().parents[1])
+        self.invoke('meal', '--name', 'After crash', '--source', 'user', '--event-id', 'after-crash')
+        self.assertEqual(len(coach.load(path)['entries']), 1)
 
     def test_empty_event_id_never_commits_or_duplicates(self):
         for _ in range(2):

@@ -2,9 +2,9 @@
 name: fitness-coach-hermes
 description: Use when tracking food, exercise and weight, creating private progress cards, or planning opt-in food-log reminders and source-linked morning ideas.
 license: MIT
-compatibility: Python 3.10+; Pillow and a Cyrillic font for PNG; USDA API network for food lookup; a local private data directory.
+compatibility: Python 3.10+ on POSIX (fcntl lock); Pillow and a Cyrillic font for PNG; USDA API network for food lookup; a local private data directory.
 metadata:
-  version: "0.8.0"
+  version: "0.8.1"
 ---
 
 # Fitness Coach for Hermes

@@ -2,6 +2,7 @@
 """Private, dependency-free coach log and Telegram-ready progress reports."""
 import argparse
 import contextlib
+import fcntl
 import json
 import math
 import os
@@ -27,15 +28,17 @@ def write_lock(path):
     """Exclusive lock around the entire read/modify/write cycle."""
     private_directory(path.parent)
     lock = path.parent / '.journal.lock'
+    fd = os.open(lock, os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)
     try:
-        fd = os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    except FileExistsError:
-        raise RuntimeError('Journal is locked by another writer; check before retrying') from None
-    try:
-        os.close(fd)
+        if not stat.S_ISREG(os.fstat(fd).st_mode) or stat.S_IMODE(os.fstat(fd).st_mode) & 0o077:
+            raise PermissionError('Journal lock must be a private regular file (0600)')
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError('Journal is locked by another writer; check before retrying') from None
         yield
     finally:
-        lock.unlink()
+        os.close(fd)  # OS releases the advisory lock on exit/crash; never unlink lock inode
 
 
 def load(path):
