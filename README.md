@@ -5,17 +5,18 @@ Public MIT-licensed skill with a **private, local-first journal** for Hermes and
 ## Install in Hermes
 
 ```bash
-hermes skills install official/health/fitness-nutrition
+hermes skills install official/health/fitness-nutrition  # optional complement
 git clone https://github.com/PotapKong/fitness-coach-hermes.git
-mkdir -p "$HOME/.hermes/skills/fitness-coach-hermes"
-cp fitness-coach-hermes/{SKILL.md,README.md,EVIDENCE.md,VISUAL.md,AUTOMATION.md,AUDIT.md,LICENSE,coach.py,food_lookup.py,ideas.py,recipes.json} "$HOME/.hermes/skills/fitness-coach-hermes/"
-cp -R fitness-coach-hermes/examples "$HOME/.hermes/skills/fitness-coach-hermes/"  # optional model style references
+python3 fitness-coach-hermes/update_skill.py --check
+python3 fitness-coach-hermes/update_skill.py --apply
 # In Telegram start a new session or use /reload-skills after installing.
 ```
 
+Read [UPDATES.md](UPDATES.md) for an opt-in daily repo-update cron, rollback, supply-chain risk and verification. The update cron is separate from all health-message scheduling; installation itself does not authorize meal ideas, reminders or delivery.
+
 ## Install in another agent
 
-This repository uses portable Agent Skills layout: `SKILL.md` at the skill root and Python scripts beside it. Clone the public repository, then copy the **whole package** (not only `SKILL.md`) into your agent's skill directory. For runtimes that use `~/.codex/skills/` or `~/.claude/skills/`, place a `fitness-coach-hermes/` directory there and reload skills; consult that agent's own documentation for its exact path. Only the Hermes path above is exercised here. Set `SKILL_DIR` to that copied directory and `COACH_DATA_DIR` to a *separate local private data directory per person*. If an agent has no filesystem tool or no Telegram attachment capability, it can read the instructions but cannot execute the logger or deliver PNGs. Do not copy health logs, sessions or Telegram tokens between agents.
+This repository uses portable Agent Skills layout: `SKILL.md` at the skill root and Python scripts beside it. Clone the public repository, then copy the **whole package** (not only `SKILL.md`) into your agent's skill directory. For runtimes that use `~/.codex/skills/` or `~/.claude/skills/`, place a `fitness-coach-hermes/` directory there and reload skills; consult that agent's own documentation for its exact path. Only the Hermes path and updater cron above are exercised here. Set `SKILL_DIR` to that copied directory and `COACH_DATA_DIR` to a *separate local private data directory per person*. If an agent has no filesystem tool or no Telegram attachment capability, it can read the instructions but cannot execute the logger or deliver PNGs. Do not copy health logs, sessions or Telegram tokens between agents.
 
 Python 3.10+ and Pillow for legacy local PNG rendering. In the cloned repo: `uv venv .venv && uv pip install --python .venv/bin/python pillow && . .venv/bin/activate` (or use any isolated environment with Pillow before calling `python3`). Install a Cyrillic-capable TTF font. The renderer searches common Linux/macOS/Windows paths; if none works, set `COACH_FONT_PATH` to a TTF file. Logging, food lookup and text reports use Python stdlib. No bot token or GitHub secret is needed. The commands below write **synthetic demonstration data only** to a fresh temporary private directory; do not run them against your real journal:
 
@@ -62,7 +63,7 @@ The built-in PNG is a deterministic data chart, not a diet-quality score. [VISUA
 
 An [independent scoped review](AUDIT.md) scored the previous public revision **6.5/10 as a local journal/reporting skill**, not as a clinical or autonomous coach. It identified missing-energy-as-zero, open-day averages, entry receipt ordering, and the absence of reminder/recipe automation. The first three have regression-tested fixes; do **not** treat the older score as a score of these later changes.
 
-Six [NHS Healthier Families](https://www.nhs.uk/healthier-families/recipes/) recipe links with source-verified prep/cook durations are in `recipes.json`. Add reviewed short metadata to grow the catalog. `ideas.py --profile /private/path/profile.json --date YYYY-MM-DD` selects a link and a cautious optional activity candidate from an explicitly confirmed, private `0600` profile. It does not generate a meal plan, determine whether a recipe is safe for an allergy, schedule delivery or read the journal. For restrictions or allergies it withholds automatic recipe suggestions; see [AUTOMATION.md](AUTOMATION.md) for consent and setup.
+The current catalog has 88 source-linked recipe pages across 12 first-party domains (including [NHS Healthier Families](https://www.nhs.uk/healthier-families/recipes/)); it stores short editorial metadata, not full copyrighted methods/photos. Source preparation time is not always ready-to-eat time: passive chilling is labelled separately. `recipe_sources.py` stages candidates for manual review, never auto-imports. `ideas.py --profile /private/path/profile.json --date YYYY-MM-DD` selects a link and a cautious optional activity candidate from an explicitly confirmed, private `0600` profile. It does not generate a meal plan, determine whether a recipe is safe for an allergy, schedule delivery or read the journal. For restrictions or allergies it withholds automatic recipe suggestions; see [AUTOMATION.md](AUTOMATION.md) for consent and setup.
 
 ## Privacy / limitations
 

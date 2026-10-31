@@ -4,7 +4,7 @@ description: Use when tracking food, exercise and weight, creating private progr
 license: MIT
 compatibility: Python 3.10+; Pillow and a Cyrillic font for PNG; USDA API network for food lookup; a local private data directory.
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # Fitness Coach for Hermes
@@ -37,6 +37,7 @@ Resolve `SKILL_DIR` to the directory containing **this** SKILL.md (not the curre
 6. For a local text report run `report --date YYYY-MM-DD`; for 7/14/28/90-day machine-readable dynamics run `trends --date YYYY-MM-DD --days N`. For a deterministic fallback card run `card --date YYYY-MM-DD --view nutrition|activity|micros|micro-trend --nutrient iron_mg --output /absolute/private/path/card.png`. Inspect numbers, missing days and privacy. `micro-trend` scales to recorded max, not RDA. Never diagnose deficiency or suggest supplements/doses from the journal.
 7. When the user asks for a Telegram update, send the **verified card** as a native image to the exact chat/thread with a short text summary. In a direct Hermes reply, `MEDIA:/absolute/private/path/card.png` sends a standalone image. For other agents use their native attachment tool. For a different destination use a supported, verified route and read it back. Do not assume `MEDIA:` plus body becomes a photo caption.
 8. Offer **separate, opt-in** daily morning ideas and gentle missing-log reminders. For ideas, first ask tastes, allergies/exclusions, kitchen constraints, available time and safe activity preferences; store a minimal private profile only after consent. Use `python3 "$SKILL_DIR/ideas.py" --profile /private/profile.json --date YYYY-MM-DD` for a read-only, source-linked recipe candidate. Never present short ingredient hints as allergen-safe: when allergies/exclusions exist, this picker returns no recipe pending full verification. Activity ideas require confirmed preferences and limitation review; no exercise prescriptions. See `AUTOMATION.md` for approved schedule, IANA time zone, route/topic, quiet hours, frequency, no-log logic, dedupe and unsubscribe. An agent **must** configure and test its scheduler/transport before it can promise reminders; the current package does not itself send them. Never silently schedule or send history to another service. Never push `private-data/`, real user-derived cards, profiles or health logs to a repository; the tracked examples here are synthetic, reviewed showcase assets only.
+9. The independent **repository-update cron** is documented in `UPDATES.md`. It may be created at installation if the owner explicitly requests unattended sync from the named public source; it never sends health messages and must not touch `COACH_DATA_DIR`. The automatic updater follows GitHub `main` code, so explain supply-chain trust and offer a review-only `--check` alternative.
 
 ## Delivery and validation
 

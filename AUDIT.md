@@ -20,6 +20,12 @@ Read-only review of public HEAD `edb7e844` on 2026-10-31: **6.5/10 for a local j
 | P2 | PNG directory privacy unchecked; tests did not OCR-check visual facts. | Private output directory is now validated; generated card factual QA and accessibility/mobile-scale checks remain manual. Add robust text/chart assertions and a second review pass before relying on external rendering. |
 | P2 | Archived weekly example has a rejected empty-plate motif. | Remove or replace that archived asset in a future visual release; `README.md` marks it as a non-example in the meantime. |
 
+## Follow-up review of the 0.6 candidate
+
+A second read-only reviewer inspected the in-progress update mechanism, recipe picker and catalog. The review found an interruption window in the first updater design, several false ingredient hints caused by substring matches (`pea` in `peanut`/`chickpea`, avocado oil labelled as avocado), morning passive wait not counted against available time, and `allergies: null` treated like an explicit empty list. The release candidate now uses an atomic managed symlink pointer (previous release remains active until replacement), removes identified false hints, includes passive wait in morning ready-to-eat time, and withholds suggestions unless allergy/exclusion lists are explicitly confirmed. Regression tests were added. The reviewer did not re-score these later fixes: the **6.5/10 remains the old local-journal score**, not a claim about the whole newer coach. Auto-updating code from public `main` still trusts that repository's maintainer account and is opt-in; `UPDATES.md` offers check-only mode.
+
+The 88 linked recipe pages were fetched with HTTP 200 and no canonical-link mismatches during this release check. This verifies availability at the check time, **not** ongoing accessibility, complete ingredient accuracy, nutritional values, allergy safety, licensing of full recipes, or fitness outcomes. No full recipe methods or source photos are included.
+
 ## Recommended next milestones
 
 1. **Delivery gate.** Collect *separate* opt-ins for morning brief and missing-log reminder: IANA time zone, each local time, route including topic, quiet hours, rate cap and an easy pause/stop. Only then configure Hermes cron with a private `(owner, kind, local date, route)` delivery ledger. Confirm no-log is unknown, not evidence of not eating. Test DST, restart/retry, pause and send readback. No scheduled job has been created in this repo.

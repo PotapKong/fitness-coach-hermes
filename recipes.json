@@ -1,14 +1,2272 @@
 {
   "version": 1,
-  "source": "NHS Healthier Families recipes",
+  "source": "First-party NHS, food creators and dietitian-led publishers; 12 source domains",
   "verified_on": "2026-10-31",
-  "notice": "Short source-linked metadata, not copied instructions. Ingredient hints are incomplete and never prove allergen safety; check the canonical recipe and packaging before cooking.",
+  "notice": "Link-first editorial metadata. Source time from Recipe JSON-LD; prep/cook missing on source is not proof of zero work. Passive wait and discrepancies are labelled separately. Short ingredient hints are incomplete, NEVER allergy or dietary-exclusion verification. No source prose or photos are copied.",
   "recipes": [
-    {"id":"nhs-eggs-paprika","title_ru":"Яйца с паприкой и томатами","url":"https://www.nhs.uk/healthier-families/recipes/eggs-paprika/","prep_minutes":5,"cook_minutes":20,"meal":["breakfast"],"ingredients_hint":["яйца","цельнозерновой хлеб","лук","томаты","паприка"]},
-    {"id":"nhs-breakfast-burritos","title_ru":"Завтрак-буррито с омлетом и овощами","url":"https://www.nhs.uk/healthier-families/recipes/breakfast-burritos/","prep_minutes":10,"cook_minutes":10,"meal":["breakfast","lunch"],"ingredients_hint":["пшеничная тортилья","яйца","молоко","томаты","сладкий перец","сыр"]},
-    {"id":"nhs-tuna-sweetcorn-pasta","title_ru":"Паста с тунцом и кукурузой","url":"https://www.nhs.uk/healthier-families/recipes/tasty-tuna-and-sweetcorn-pasta/","prep_minutes":10,"cook_minutes":20,"meal":["lunch","dinner"],"ingredients_hint":["цельнозерновая паста","тунец","кукуруза","томаты","лук","чеснок"]},
-    {"id":"nhs-cheats-pizza-calzone","title_ru":"Быстрый кальцоне из тортильи","url":"https://www.nhs.uk/healthier-families/recipes/cheats-pizza-calzone/","prep_minutes":10,"cook_minutes":10,"meal":["lunch","dinner"],"ingredients_hint":["пшеничная тортилья","сыр","томаты","грибы","сладкий перец","салатные листья"]},
-    {"id":"nhs-toasted-oats-fruit","title_ru":"Поджаренная овсянка с йогуртом и фруктами","url":"https://www.nhs.uk/healthier-families/recipes/toasted-oats-with-yoghurt-and-fruit/","prep_minutes":10,"cook_minutes":2,"meal":["breakfast","snack"],"ingredients_hint":["овсяные хлопья","йогурт","орехи","семечки","яблоко","виноград"]},
-    {"id":"nhs-chicken-jacket-potato","title_ru":"Картофель с курицей и томатами","url":"https://www.nhs.uk/healthier-families/recipes/chicken-and-tomato-jacket-potato/","prep_minutes":5,"cook_minutes":25,"meal":["lunch","dinner"],"ingredients_hint":["картофель","курица","томаты","греческий йогурт","зелёный лук"]}
+    {
+      "id": "nhs-eggs-paprika",
+      "title_ru": "Яйца с паприкой и томатами",
+      "url": "https://www.nhs.uk/healthier-families/recipes/eggs-paprika/",
+      "prep_minutes": 5,
+      "cook_minutes": 20,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "яйца",
+        "цельнозерновой хлеб",
+        "лук",
+        "томаты",
+        "паприка"
+      ],
+      "source": "nhs.uk",
+      "source_title": "Eggs paprika recipe",
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "checked_on": "2026-10-31",
+      "rest_minutes": 0,
+      "published_total_minutes": 25
+    },
+    {
+      "id": "nhs-breakfast-burritos",
+      "title_ru": "Завтрак-буррито с омлетом и овощами",
+      "url": "https://www.nhs.uk/healthier-families/recipes/breakfast-burritos/",
+      "prep_minutes": 10,
+      "cook_minutes": 10,
+      "meal": [
+        "breakfast",
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "пшеничная тортилья",
+        "яйца",
+        "молоко",
+        "томаты",
+        "сладкий перец",
+        "сыр"
+      ],
+      "source": "nhs.uk",
+      "source_title": "Breakfast burritos recipe",
+      "tags": [
+        "quick",
+        "portable"
+      ],
+      "checked_on": "2026-10-31",
+      "rest_minutes": 0,
+      "published_total_minutes": 20
+    },
+    {
+      "id": "nhs-tuna-sweetcorn-pasta",
+      "title_ru": "Паста с тунцом и кукурузой",
+      "url": "https://www.nhs.uk/healthier-families/recipes/tasty-tuna-and-sweetcorn-pasta/",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "цельнозерновая паста",
+        "тунец",
+        "кукуруза",
+        "томаты",
+        "лук",
+        "чеснок"
+      ],
+      "source": "nhs.uk",
+      "source_title": "Tasty tuna and sweetcorn pasta recipe",
+      "tags": [
+        "protein_featured"
+      ],
+      "checked_on": "2026-10-31",
+      "rest_minutes": 0,
+      "published_total_minutes": 30
+    },
+    {
+      "id": "nhs-cheats-pizza-calzone",
+      "title_ru": "Быстрый кальцоне из тортильи",
+      "url": "https://www.nhs.uk/healthier-families/recipes/cheats-pizza-calzone/",
+      "prep_minutes": 10,
+      "cook_minutes": 10,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "пшеничная тортилья",
+        "сыр",
+        "томаты",
+        "грибы",
+        "сладкий перец",
+        "салатные листья"
+      ],
+      "source": "nhs.uk",
+      "source_title": "Cheats' pizza calzone recipe",
+      "tags": [
+        "quick",
+        "portable"
+      ],
+      "checked_on": "2026-10-31",
+      "rest_minutes": 0,
+      "published_total_minutes": 20
+    },
+    {
+      "id": "nhs-toasted-oats-fruit",
+      "title_ru": "Поджаренная овсянка с йогуртом и фруктами",
+      "url": "https://www.nhs.uk/healthier-families/recipes/toasted-oats-with-yoghurt-and-fruit/",
+      "prep_minutes": 10,
+      "cook_minutes": 2,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "овсяные хлопья",
+        "йогурт",
+        "орехи",
+        "семечки",
+        "яблоко",
+        "виноград"
+      ],
+      "source": "nhs.uk",
+      "source_title": "Toasted oats with yoghurt and fruit recipe",
+      "tags": [
+        "quick"
+      ],
+      "checked_on": "2026-10-31",
+      "rest_minutes": 0,
+      "published_total_minutes": 12
+    },
+    {
+      "id": "nhs-chicken-jacket-potato",
+      "title_ru": "Картофель с курицей и томатами",
+      "url": "https://www.nhs.uk/healthier-families/recipes/chicken-and-tomato-jacket-potato/",
+      "prep_minutes": 5,
+      "cook_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "картофель",
+        "курица",
+        "томаты",
+        "греческий йогурт",
+        "зелёный лук"
+      ],
+      "source": "nhs.uk",
+      "source_title": "Chicken and tomato jacket potato recipe",
+      "tags": [
+        "protein_featured"
+      ],
+      "checked_on": "2026-10-31",
+      "rest_minutes": 0,
+      "published_total_minutes": 30
+    },
+    {
+      "id": "pickuplimes-vanilla-chia-pudding-with-mixed-fruit-289",
+      "title_ru": "Ванильный чиа-пудинг с фруктами",
+      "source_title": "Vanilla Chia Pudding with Mixed Fruit",
+      "source": "pickuplimes.com",
+      "url": "https://www.pickuplimes.com/recipe/vanilla-chia-pudding-with-mixed-fruit-289",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 480,
+      "published_total_minutes": 485,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "молоко",
+        "чиа",
+        "манго",
+        "клубника"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": "Пассивное ожидание показано отдельно; утренний подбор не предлагает блюда, которые нужно готовить с вечера."
+    },
+    {
+      "id": "therealfooddietitians-savory-zucchini-fritters",
+      "title_ru": "Кабачковые оладьи с пармезаном",
+      "source_title": "Zucchini Fritters Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/savory-zucchini-fritters",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 10,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кабачок",
+        "яйцо",
+        "сыр"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-zucchini-fritters",
+      "title_ru": "Кабачковые оладьи с зеленью",
+      "source_title": "Zucchini Fritters",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/zucchini-fritters",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кабачок",
+        "яйцо",
+        "мука"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-healthy-blueberry-baked-oatmeal",
+      "title_ru": "Запечённая овсянка с черникой",
+      "source_title": "Blueberry Baked Oatmeal Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/healthy-blueberry-baked-oatmeal/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 35,
+      "rest_minutes": 0,
+      "published_total_minutes": 45,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "овсянка",
+        "молоко",
+        "банан",
+        "яйцо",
+        "черника"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-5-ingredient-peanut-butter-granola-bars",
+      "title_ru": "Овсяные батончики с арахисовой пастой",
+      "source_title": "Peanut Butter Granola Bars Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/5-ingredient-peanut-butter-granola-bars/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 14,
+      "rest_minutes": 0,
+      "published_total_minutes": 19,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "овсянка",
+        "арахисовая паста",
+        "яйцо",
+        "чиа",
+        "грецкий орех",
+        "тыквенные семечки"
+      ],
+      "tags": [
+        "quick",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-gluten-free-banana-chocolate-chip-muffins",
+      "title_ru": "Банановые маффины с шоколадом",
+      "source_title": "Gluten-Free Banana Muffins Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/gluten-free-banana-chocolate-chip-muffins/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "мука",
+        "банан",
+        "яйцо"
+      ],
+      "tags": [
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-sweet-potato-breakfast-casserole",
+      "title_ru": "Запеканка с бататом на завтрак",
+      "source_title": "Sweet Potato Breakfast Casserole",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/sweet-potato-breakfast-casserole/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 22,
+      "rest_minutes": 0,
+      "published_total_minutes": 42,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "авокадо",
+        "батат",
+        "свинина",
+        "шпинат",
+        "яйцо"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-orange-smoothie",
+      "title_ru": "Апельсиновый смузи с овощами",
+      "source_title": "Orange Smoothie Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/orange-smoothie/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 5,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "апельсин",
+        "банан",
+        "молоко",
+        "йогурт"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-overnight-oats-recipe",
+      "title_ru": "Ночная овсянка с чиа",
+      "source_title": "Overnight Oats",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/overnight-oats-recipe/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 0,
+      "rest_minutes": 480,
+      "published_total_minutes": 10,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "овсянка",
+        "чиа",
+        "йогурт",
+        "молоко",
+        "арахисовая паста",
+        "клубника"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": "На карточке источника 10 минут; в инструкции требуется ночь в холодильнике. Подготовить вечером."
+    },
+    {
+      "id": "loveandlemons-how-to-make-hard-boiled-eggs",
+      "title_ru": "Варёные яйца",
+      "source_title": "How to Make Hard Boiled Eggs",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/how-to-make-hard-boiled-eggs/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 15,
+      "rest_minutes": 15,
+      "published_total_minutes": 35,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "яйцо"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-chia-seed-pudding",
+      "title_ru": "Чиа-пудинг с ягодами",
+      "source_title": "Chia Seed Pudding",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/chia-seed-pudding/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 0,
+      "rest_minutes": 480,
+      "published_total_minutes": 495,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "молоко",
+        "чиа",
+        "черника"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": "Пассивное ожидание показано отдельно; утренний подбор не предлагает блюда, которые нужно готовить с вечера."
+    },
+    {
+      "id": "loveandlemons-egg-muffins",
+      "title_ru": "Яичные маффины с овощами",
+      "source_title": "Breakfast Egg Muffins",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/egg-muffins/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 25,
+      "rest_minutes": 0,
+      "published_total_minutes": 40,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "яйцо",
+        "мука",
+        "сыр"
+      ],
+      "tags": [
+        "make_ahead",
+        "protein_featured",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-chickpea-salad-sandwich",
+      "title_ru": "Сэндвич с салатом из нута",
+      "source_title": "Chickpea Salad Sandwich",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/chickpea-salad-sandwich/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 5,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "нут",
+        "тахини",
+        "фасоль",
+        "огурец"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-healthy-wraps",
+      "title_ru": "Овощные роллы-обёртки",
+      "source_title": "Healthy Lunch Wraps",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/healthy-wraps/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 30,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "сыр",
+        "нут",
+        "кейл",
+        "авокадо"
+      ],
+      "tags": [
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-vegetarian-chili-recipe",
+      "title_ru": "Овощной чили",
+      "source_title": "Vegetarian Chili",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/vegetarian-chili-recipe/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 35,
+      "rest_minutes": 0,
+      "published_total_minutes": 45,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "томаты",
+        "фасоль",
+        "авокадо",
+        "йогурт"
+      ],
+      "tags": [
+        "make_ahead",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-easy-kale-salad",
+      "title_ru": "Салат из кейла и яблока",
+      "source_title": "Easy Kale Salad",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/easy-kale-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 20,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кейл",
+        "грецкий орех"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-cottage-cheese-eggs",
+      "title_ru": "Яйца с зернистым творогом",
+      "source_title": "Cottage Cheese Eggs",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/cottage-cheese-eggs/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 10,
+      "rest_minutes": 0,
+      "published_total_minutes": 15,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "яйцо",
+        "зернистый творог",
+        "сливочное масло"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-savory-pumpkin-fritters",
+      "title_ru": "Тыквенные оладьи с пармезаном",
+      "source_title": "Savory Pumpkin Fritters",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/savory-pumpkin-fritters/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "тыква",
+        "яйцо",
+        "мука",
+        "сыр"
+      ],
+      "tags": [],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-cold-sesame-noodles",
+      "title_ru": "Холодная лапша с кунжутом",
+      "source_title": "Cold Sesame Noodles",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/cold-sesame-noodles/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 8,
+      "cook_minutes": 12,
+      "rest_minutes": 0,
+      "published_total_minutes": 20,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "спагетти",
+        "томаты",
+        "кунжут"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-bruschetta-chicken",
+      "title_ru": "Курица с томатной брускеттой",
+      "source_title": "Bruschetta Chicken",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/bruschetta-chicken/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "томаты",
+        "курица",
+        "сыр"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-the-one-chocolate-mug-cake",
+      "title_ru": "Шоколадный кекс в кружке",
+      "source_title": "Chocolate Mug Cake",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/the-one-chocolate-mug-cake/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 3,
+      "cook_minutes": 1,
+      "rest_minutes": 0,
+      "published_total_minutes": 4,
+      "meal": [
+        "snack"
+      ],
+      "ingredients_hint": [
+        "мука",
+        "молоко",
+        "арахисовая паста"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-creamy-cucumber-salad",
+      "title_ru": "Огуречный салат с укропом",
+      "source_title": "Creamy Cucumber Salad",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/creamy-cucumber-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 15,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "огурец"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-garlic-butter-baked-cod",
+      "title_ru": "Запечённая треска с чесночным маслом",
+      "source_title": "Garlic Butter Baked Cod",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/garlic-butter-baked-cod/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "треска"
+      ],
+      "tags": [
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-easy-sesame-chicken",
+      "title_ru": "Курица в кунжутном соусе",
+      "source_title": "Easy Sesame Chicken",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/easy-sesame-chicken/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кунжут",
+        "рис",
+        "курица",
+        "яйцо"
+      ],
+      "tags": [
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-classic-three-bean-salad",
+      "title_ru": "Салат из трёх видов фасоли",
+      "source_title": "Classic Three Bean Salad",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/classic-three-bean-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 0,
+      "rest_minutes": 30,
+      "published_total_minutes": 45,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "фасоль"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-coconut-curry-beans-and-greens",
+      "title_ru": "Фасоль с зеленью в кокосовом карри",
+      "source_title": "Coconut Curry Beans and Greens",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/coconut-curry-beans-and-greens/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "фасоль",
+        "зелень",
+        "кокосовое молоко"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-garlic-noodles",
+      "title_ru": "Чесночная лапша",
+      "source_title": "Quick & Easy Garlic Noodles",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/garlic-noodles/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кунжут",
+        "паста"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-quick-veggie-pasta",
+      "title_ru": "Быстрая паста с овощами",
+      "source_title": "Quick Veggie Pasta",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/quick-veggie-pasta/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "грибы",
+        "томаты",
+        "шпинат"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-creamy-tomato-spinach-pasta",
+      "title_ru": "Паста с томатами и шпинатом",
+      "source_title": "Creamy Tomato and Spinach Pasta",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/creamy-tomato-spinach-pasta/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "паста",
+        "томаты",
+        "сыр",
+        "шпинат"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-tuscan-white-bean-pasta",
+      "title_ru": "Тосканская паста с белой фасолью",
+      "source_title": "Tuscan White Bean Pasta",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/tuscan-white-bean-pasta/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "томаты",
+        "фасоль",
+        "шпинат"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-easy-orange-chicken",
+      "title_ru": "Курица в апельсиновом соусе",
+      "source_title": "Easy Orange Chicken",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/easy-orange-chicken/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "апельсин",
+        "рис",
+        "курица",
+        "яйцо"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-greek-salad",
+      "title_ru": "Греческий салат",
+      "source_title": "Greek Salad Recipe",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/greek-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 15,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "сыр",
+        "томаты",
+        "огурец"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-curry-chicken-salad",
+      "title_ru": "Куриный салат с карри",
+      "source_title": "Curry Chicken Salad",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/curry-chicken-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "йогурт",
+        "курица"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-blt-pasta-salad",
+      "title_ru": "Паста-салат с беконом и томатами",
+      "source_title": "BLT Pasta Salad",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/blt-pasta-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 25,
+      "rest_minutes": 0,
+      "published_total_minutes": 35,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "бекон",
+        "паста",
+        "томаты",
+        "шпинат"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-spaghetti-aglio-e-olio",
+      "title_ru": "Спагетти с чесноком и оливковым маслом",
+      "source_title": "Spaghetti Aglio e Olio Recipe",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/spaghetti-aglio-e-olio/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 20,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "спагетти",
+        "сыр",
+        "паста"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-meal-prep-breakfast-burritos",
+      "title_ru": "Буррито на завтрак для заготовки",
+      "source_title": "Meal Prep Breakfast Burritos Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/meal-prep-breakfast-burritos/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 35,
+      "cook_minutes": 25,
+      "rest_minutes": 0,
+      "published_total_minutes": 60,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "яйцо",
+        "сыр",
+        "мука"
+      ],
+      "tags": [
+        "make_ahead",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-sweet-potato-pancakes",
+      "title_ru": "Оладьи из батата",
+      "source_title": "Fluffy Sweet Potato Pancakes (gluten-free)",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/sweet-potato-pancakes/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 8,
+      "rest_minutes": 0,
+      "published_total_minutes": 18,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "молоко",
+        "яйцо",
+        "батат"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-tex-mex-sweet-potato-hash",
+      "title_ru": "Текс-мекс с бататом и фаршем",
+      "source_title": "Tex-Mex Sweet Potato Hash",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/tex-mex-sweet-potato-hash/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 25,
+      "rest_minutes": 0,
+      "published_total_minutes": 40,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "говядина",
+        "авокадо",
+        "батат",
+        "грибы"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-go-to-green-smoothie",
+      "title_ru": "Зелёный смузи с бананом",
+      "source_title": "Five-Ingredient Go-To Green Smoothie",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/go-to-green-smoothie/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 5,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "банан",
+        "манго",
+        "шпинат",
+        "авокадо",
+        "молоко"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-pumpkin-pie-protein-smoothie",
+      "title_ru": "Тыквенный смузи с йогуртом",
+      "source_title": "Protein Pumpkin Smoothie Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/pumpkin-pie-protein-smoothie/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 5,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "банан",
+        "молоко",
+        "тыква",
+        "йогурт"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "eatingbirdfood-basic-chia-seed-pudding",
+      "title_ru": "Чиа-пудинг с ягодами",
+      "source_title": "Chia Seed Pudding Recipe",
+      "source": "eatingbirdfood.com",
+      "url": "https://www.eatingbirdfood.com/basic-chia-seed-pudding/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 0,
+      "rest_minutes": 60,
+      "published_total_minutes": 70,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "чиа",
+        "молоко"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": "Время ожидания отдельно; подготовить заранее."
+    },
+    {
+      "id": "eatingbirdfood-savory-egg-biscuits",
+      "title_ru": "Несладкие яичные булочки",
+      "source_title": "Protein Breakfast Biscuits",
+      "source": "eatingbirdfood.com",
+      "url": "https://www.eatingbirdfood.com/savory-egg-biscuits/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 35,
+      "rest_minutes": 0,
+      "published_total_minutes": 50,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "яйцо"
+      ],
+      "tags": [
+        "make_ahead",
+        "protein_featured",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "eatingbirdfood-chicken-pea-salad",
+      "title_ru": "Курица с горошком и лимоном",
+      "source_title": "Lemon Parmesan Chicken and Peas",
+      "source": "eatingbirdfood.com",
+      "url": "https://www.eatingbirdfood.com/chicken-pea-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 5,
+      "rest_minutes": 0,
+      "published_total_minutes": 15,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "горошек",
+        "курица",
+        "йогурт",
+        "лимон"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "eatingbirdfood-banana-bread-latte-overnight-oats",
+      "title_ru": "Ночная овсянка «банановый латте»",
+      "source_title": "Banana Bread Latte Overnight Oats",
+      "source": "eatingbirdfood.com",
+      "url": "https://www.eatingbirdfood.com/banana-bread-latte-overnight-oats/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 240,
+      "published_total_minutes": 245,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "овсянка",
+        "молоко",
+        "банан",
+        "чиа"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": "Время ожидания отдельно; подготовить заранее."
+    },
+    {
+      "id": "eatingbirdfood-snickers-protein-balls",
+      "title_ru": "Шоколадные шарики с арахисом и финиками",
+      "source_title": "Snickers Protein Balls",
+      "source": "eatingbirdfood.com",
+      "url": "https://www.eatingbirdfood.com/snickers-protein-balls/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 0,
+      "rest_minutes": 30,
+      "published_total_minutes": 40,
+      "meal": [
+        "snack"
+      ],
+      "ingredients_hint": [
+        "овсянка",
+        "арахисовая паста"
+      ],
+      "tags": [
+        "quick",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "skinnytaste-maple-dijon-sheet-pan-chicken",
+      "title_ru": "Курица с кленово-горчичной глазурью",
+      "source_title": "Maple Dijon Sheet Pan Chicken",
+      "source": "skinnytaste.com",
+      "url": "https://www.skinnytaste.com/maple-dijon-sheet-pan-chicken/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 35,
+      "rest_minutes": 0,
+      "published_total_minutes": 50,
+      "meal": [
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "курица"
+      ],
+      "tags": [
+        "make_ahead",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "skinnytaste-baked-chicken-parmesan",
+      "title_ru": "Запечённая курица с пармезаном",
+      "source_title": "Baked Chicken Parmesan Recipe",
+      "source": "skinnytaste.com",
+      "url": "https://www.skinnytaste.com/baked-chicken-parmesan/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 30,
+      "rest_minutes": 0,
+      "published_total_minutes": 40,
+      "meal": [
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "курица",
+        "сыр"
+      ],
+      "tags": [
+        "make_ahead",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "skinnytaste-air-fryer-chicken-tenders",
+      "title_ru": "Куриные полоски в аэрогриле",
+      "source_title": "Air Fryer Chicken Tenders",
+      "source": "skinnytaste.com",
+      "url": "https://www.skinnytaste.com/air-fryer-chicken-tenders/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 30,
+      "rest_minutes": 0,
+      "published_total_minutes": 35,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "курица",
+        "яйцо",
+        "лимон"
+      ],
+      "tags": [
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "skinnytaste-broccoli-cheddar-soup",
+      "title_ru": "Суп из брокколи с чеддером",
+      "source_title": "Broccoli Cheddar Soup",
+      "source": "skinnytaste.com",
+      "url": "https://www.skinnytaste.com/broccoli-cheddar-soup/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 30,
+      "rest_minutes": 0,
+      "published_total_minutes": 50,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "мука",
+        "молоко",
+        "брокколи",
+        "сыр"
+      ],
+      "tags": [
+        "make_ahead",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "skinnytaste-sweet-potato-quinoa-breakfast-bowl",
+      "title_ru": "Боул с бататом и киноа",
+      "source_title": "Sweet Potato Quinoa Bowl",
+      "source": "skinnytaste.com",
+      "url": "https://www.skinnytaste.com/sweet-potato-quinoa-breakfast-bowl/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 30,
+      "rest_minutes": 0,
+      "published_total_minutes": 45,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "батат",
+        "молоко",
+        "киноа",
+        "черника"
+      ],
+      "tags": [
+        "make_ahead",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "skinnytaste-pumpkin-cornbread-muffins",
+      "title_ru": "Тыквенно-кукурузные маффины",
+      "source_title": "Pumpkin Cornbread Muffins",
+      "source": "skinnytaste.com",
+      "url": "https://www.skinnytaste.com/pumpkin-cornbread-muffins/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 15,
+      "rest_minutes": 10,
+      "published_total_minutes": 40,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "тыква",
+        "молоко",
+        "яйцо",
+        "мука"
+      ],
+      "tags": [
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "fitfoodiefinds-cottage-cheese-pumpkin-fritters",
+      "title_ru": "Тыквенные оладьи с зернистым творогом",
+      "source_title": "Cottage Cheese Pumpkin Fritters",
+      "source": "fitfoodiefinds.com",
+      "url": "https://fitfoodiefinds.com/cottage-cheese-pumpkin-fritters/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 30,
+      "cook_minutes": 8,
+      "rest_minutes": 0,
+      "published_total_minutes": 38,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "мука",
+        "тыква",
+        "зернистый творог",
+        "сыр",
+        "молоко"
+      ],
+      "tags": [
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "fitfoodiefinds-chicken-and-rice-recipe",
+      "title_ru": "Курица с рисом",
+      "source_title": "Chicken and Rice Recipe",
+      "source": "fitfoodiefinds.com",
+      "url": "https://fitfoodiefinds.com/chicken-and-rice-recipe/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 35,
+      "rest_minutes": 0,
+      "published_total_minutes": 50,
+      "meal": [
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "курица",
+        "грибы",
+        "рис",
+        "горошек"
+      ],
+      "tags": [
+        "make_ahead",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "fitfoodiefinds-coconut-chicken-tenders",
+      "title_ru": "Хрустящие кокосовые куриные полоски",
+      "source_title": "Air Fryer Crispy Coconut Chicken Tenders",
+      "source": "fitfoodiefinds.com",
+      "url": "https://fitfoodiefinds.com/coconut-chicken-tenders/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 12,
+      "rest_minutes": 0,
+      "published_total_minutes": 32,
+      "meal": [
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "курица",
+        "яйцо"
+      ],
+      "tags": [
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-caesar-wrap",
+      "title_ru": "Ролл «Цезарь»",
+      "source_title": "Caesar Wrap",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/caesar-wrap/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 15,
+      "meal": [
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "кейл",
+        "нут",
+        "авокадо",
+        "лимон"
+      ],
+      "tags": [
+        "quick",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-black-bean-tacos",
+      "title_ru": "Тако с чёрной фасолью",
+      "source_title": "Black Bean Tacos",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/black-bean-tacos/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "фасоль",
+        "лайм",
+        "капуста",
+        "сыр"
+      ],
+      "tags": [],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-quinoa-salad-recipe",
+      "title_ru": "Салат с киноа",
+      "source_title": "Quinoa Salad",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/quinoa-salad-recipe/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 40,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "киноа",
+        "томаты",
+        "огурец",
+        "сыр",
+        "нут"
+      ],
+      "tags": [
+        "make_ahead",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-egg-bites-recipe",
+      "title_ru": "Мини-омлеты",
+      "source_title": "Egg Bites",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/egg-bites-recipe/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "яйцо",
+        "зернистый творог",
+        "сыр",
+        "молоко",
+        "шпинат"
+      ],
+      "tags": [],
+      "timing_note": ""
+    },
+    {
+      "id": "loveandlemons-beet-hummus",
+      "title_ru": "Свекольный хумус",
+      "source_title": "Beet Hummus",
+      "source": "loveandlemons.com",
+      "url": "https://www.loveandlemons.com/beet-hummus/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 40,
+      "rest_minutes": 0,
+      "published_total_minutes": 50,
+      "meal": [
+        "snack",
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "свёкла",
+        "нут",
+        "тахини",
+        "лимон",
+        "кунжут"
+      ],
+      "tags": [
+        "make_ahead",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-overnight-oats-base-recipe-plus-variations",
+      "title_ru": "Ночная овсянка, основа с вариациями",
+      "source_title": "Overnight Oats (Base Recipe plus Variations)",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/overnight-oats-base-recipe-plus-variations/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 480,
+      "published_total_minutes": 485,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "овсянка",
+        "молоко",
+        "чиа",
+        "черника",
+        "арахисовая паста"
+      ],
+      "tags": [
+        "make_ahead"
+      ],
+      "timing_note": "Время ожидания отдельно; подготовить заранее."
+    },
+    {
+      "id": "budgetbytes-how-to-make-the-ultimate-veggie-sandwich",
+      "title_ru": "Овощной сэндвич",
+      "source_title": "The Best Veggie Sandwich",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/how-to-make-the-ultimate-veggie-sandwich/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 10,
+      "meal": [
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "сыр",
+        "лимон",
+        "огурец",
+        "томаты",
+        "шпинат"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-homemade-hummus",
+      "title_ru": "Домашний хумус",
+      "source_title": "Homemade Hummus",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/homemade-hummus/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 5,
+      "meal": [
+        "snack",
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "нут",
+        "лимон",
+        "тахини"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "budgetbytes-mixed-berry-smoothie",
+      "title_ru": "Ягодный смузи",
+      "source_title": "Mixed Berry Smoothie",
+      "source": "budgetbytes.com",
+      "url": "https://www.budgetbytes.com/mixed-berry-smoothie/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 5,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "банан",
+        "йогурт",
+        "молоко"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "downshiftology-chicken-dijon",
+      "title_ru": "Курица с дижонской горчицей",
+      "source_title": "Chicken Dijon",
+      "source": "downshiftology.com",
+      "url": "https://downshiftology.com/recipes/chicken-dijon/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "курица"
+      ],
+      "tags": [
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "downshiftology-korean-beef-bowl",
+      "title_ru": "Боул с говядиной по-корейски",
+      "source_title": "Korean Beef Bowl",
+      "source": "downshiftology.com",
+      "url": "https://downshiftology.com/recipes/korean-beef-bowl/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 10,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "говядина",
+        "кунжут",
+        "рис",
+        "огурец"
+      ],
+      "tags": [
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "downshiftology-tuscan-white-bean-soup",
+      "title_ru": "Тосканский суп с белой фасолью",
+      "source_title": "Tuscan White Bean Soup",
+      "source": "downshiftology.com",
+      "url": "https://downshiftology.com/recipes/tuscan-white-bean-soup/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 28,
+      "rest_minutes": 0,
+      "published_total_minutes": 43,
+      "meal": [
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "томаты",
+        "фасоль",
+        "кейл",
+        "лимон"
+      ],
+      "tags": [
+        "make_ahead",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "downshiftology-wedge-salad",
+      "title_ru": "Салат-айсберг с заправкой",
+      "source_title": "Wedge Salad (Steakhouse Copycat)",
+      "source": "downshiftology.com",
+      "url": "https://downshiftology.com/recipes/wedge-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 10,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "бекон",
+        "сыр",
+        "томаты"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "downshiftology-tropical-digestive-smoothie",
+      "title_ru": "Тропический смузи",
+      "source_title": "Tropical Digestive Smoothie",
+      "source": "downshiftology.com",
+      "url": "https://downshiftology.com/recipes/tropical-digestive-smoothie/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 10,
+      "meal": [
+        "breakfast",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "молоко",
+        "шпинат",
+        "авокадо",
+        "чиа",
+        "лайм"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "feelgoodfoodie-taco-soup",
+      "title_ru": "Суп в стиле тако",
+      "source_title": "Taco Soup Recipe",
+      "source": "feelgoodfoodie.net",
+      "url": "https://feelgoodfoodie.net/recipe/taco-soup/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "говядина",
+        "фасоль",
+        "томаты",
+        "лайм"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "feelgoodfoodie-cabbage-pancake",
+      "title_ru": "Капустные оладьи",
+      "source_title": "Cabbage Pancake Recipe",
+      "source": "feelgoodfoodie.net",
+      "url": "https://feelgoodfoodie.net/recipe/cabbage-pancake/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 35,
+      "meal": [
+        "snack"
+      ],
+      "ingredients_hint": [
+        "яйцо",
+        "мука",
+        "кунжут",
+        "капуста"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "feelgoodfoodie-peanut-butter-pancakes",
+      "title_ru": "Оладьи с арахисовой пастой",
+      "source_title": "Peanut Butter Pancakes Recipe",
+      "source": "feelgoodfoodie.net",
+      "url": "https://feelgoodfoodie.net/recipe/peanut-butter-pancakes/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 10,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "breakfast"
+      ],
+      "ingredients_hint": [
+        "мука",
+        "арахисовая паста",
+        "яйцо",
+        "молоко",
+        "банан"
+      ],
+      "tags": [
+        "quick"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "bbcgoodfood-tuna-salad-sandwich",
+      "title_ru": "Сэндвич с тунцом",
+      "source_title": "Tuna salad sandwich",
+      "source": "bbcgoodfood.com",
+      "url": "https://www.bbcgoodfood.com/recipes/tuna-salad-sandwich",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 10,
+      "meal": [
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "тунец",
+        "огурец"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward",
+        "protein_featured",
+        "portable"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "bbcgoodfood-fajita-chicken-rice-bowl-with-burnt-lime",
+      "title_ru": "Боул с курицей фахита, рисом и лаймом",
+      "source_title": "Fajita chicken rice bowl with burnt lime",
+      "source": "bbcgoodfood.com",
+      "url": "https://www.bbcgoodfood.com/recipes/fajita-chicken-rice-bowl-with-burnt-lime",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 25,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "курица",
+        "лайм",
+        "фасоль",
+        "рис"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "bbcgoodfood-air-fryer-salmon",
+      "title_ru": "Лосось в аэрогриле",
+      "source_title": "Air fryer salmon",
+      "source": "bbcgoodfood.com",
+      "url": "https://www.bbcgoodfood.com/recipes/air-fryer-salmon",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 10,
+      "rest_minutes": 0,
+      "published_total_minutes": 15,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "лосось"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "bbcgoodfood-easy-teriyaki-chicken",
+      "title_ru": "Курица терияки",
+      "source_title": "Easy teriyaki chicken",
+      "source": "bbcgoodfood.com",
+      "url": "https://www.bbcgoodfood.com/recipes/easy-teriyaki-chicken",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 20,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кунжут",
+        "курица",
+        "рис"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "recipetineats-crispy-zucchini-fritters",
+      "title_ru": "Хрустящие кабачковые оладьи",
+      "source_title": "Crispy Zucchini Fritters",
+      "source": "recipetineats.com",
+      "url": "https://www.recipetineats.com/crispy-zucchini-fritters/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 12,
+      "rest_minutes": 0,
+      "published_total_minutes": 27,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кабачок",
+        "яйцо",
+        "мука",
+        "йогурт"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-ground-beef-stir-fry",
+      "title_ru": "Стир-фрай с говядиной",
+      "source_title": "Ground Beef Stir Fry Recipe",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/ground-beef-stir-fry/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 18,
+      "rest_minutes": 0,
+      "published_total_minutes": 28,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "кунжут",
+        "говядина",
+        "рис",
+        "стручковая фасоль"
+      ],
+      "tags": [
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-one-pan-salmon-and-veggie-bake",
+      "title_ru": "Лосось с овощами на одном противне",
+      "source_title": "Sheet Pan Baked Salmon with Vegetables",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/one-pan-salmon-and-veggie-bake/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 15,
+      "cook_minutes": 30,
+      "rest_minutes": 0,
+      "published_total_minutes": 45,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "лимон",
+        "лосось",
+        "батат",
+        "картофель"
+      ],
+      "tags": [
+        "make_ahead",
+        "vegetable_forward",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "therealfooddietitians-apple-broccoli-cauliflower-salad",
+      "title_ru": "Салат с яблоком, брокколи и цветной капустой",
+      "source_title": "Apple Broccoli Cauliflower Salad",
+      "source": "therealfooddietitians.com",
+      "url": "https://therealfooddietitians.com/apple-broccoli-cauliflower-salad/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 20,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 20,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "брокколи",
+        "сыр",
+        "грецкий орех",
+        "лимон"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "nhs-crispy-potato-courgette-fritters-with-salsa",
+      "title_ru": "Картофельно-кабачковые оладьи с сальсой",
+      "source_title": "Crispy potato fritters with salsa recipe",
+      "source": "nhs.uk",
+      "url": "https://www.nhs.uk/healthier-families/recipes/crispy-potato-courgette-fritters-with-salsa/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 20,
+      "rest_minutes": 0,
+      "published_total_minutes": 30,
+      "meal": [
+        "lunch",
+        "snack"
+      ],
+      "ingredients_hint": [
+        "картофель",
+        "кабачок",
+        "яйцо",
+        "томаты"
+      ],
+      "tags": [
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "nhs-creamy-hummus-dip-with-pitta-bread-and-vegetable-sticks",
+      "title_ru": "Хумус с питой и овощами",
+      "source_title": "Creamy hummus dip with pitta bread and vegetable sticks recipe",
+      "source": "nhs.uk",
+      "url": "https://www.nhs.uk/healthier-families/recipes/creamy-hummus-dip-with-pitta-bread-and-vegetable-sticks/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 10,
+      "cook_minutes": 0,
+      "rest_minutes": 0,
+      "published_total_minutes": 10,
+      "meal": [
+        "snack",
+        "lunch"
+      ],
+      "ingredients_hint": [
+        "нут",
+        "лимон",
+        "йогурт"
+      ],
+      "tags": [
+        "quick",
+        "vegetable_forward"
+      ],
+      "timing_note": ""
+    },
+    {
+      "id": "nhs-chicken-pasta-with-peas",
+      "title_ru": "Паста с курицей и горошком",
+      "source_title": "Chicken pasta with peas recipe",
+      "source": "nhs.uk",
+      "url": "https://www.nhs.uk/healthier-families/recipes/chicken-pasta-with-peas/",
+      "checked_on": "2026-10-31",
+      "prep_minutes": 5,
+      "cook_minutes": 15,
+      "rest_minutes": 0,
+      "published_total_minutes": 20,
+      "meal": [
+        "lunch",
+        "dinner"
+      ],
+      "ingredients_hint": [
+        "паста",
+        "горошек",
+        "курица"
+      ],
+      "tags": [
+        "quick",
+        "protein_featured"
+      ],
+      "timing_note": ""
+    }
   ]
 }
