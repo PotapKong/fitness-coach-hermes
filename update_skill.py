@@ -72,12 +72,15 @@ def validate(source):
 
 def install(source, target, sha):
     target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    release_root = target.parent.parent / "skill-releases" / "fitness-coach-hermes"
+    release_root.mkdir(mode=0o700, parents=True, exist_ok=True)
     backup = None
     if target.is_symlink():
         link = os.readlink(target)
-        if "/" in link or "\\" in link or not link.startswith(".fitness-coach-release-"):
+        backup = (target.parent / link).resolve()
+        if (not link.startswith("../skill-releases/fitness-coach-hermes/.fitness-coach-release-")
+                or backup.parent != release_root.resolve()):
             raise ValueError("Existing target points outside managed releases")
-        backup = target.parent / link
         if not backup.is_dir():
             raise ValueError("Existing managed release is missing")
     elif target.exists():
@@ -92,7 +95,7 @@ def install(source, target, sha):
         unexpected = {item.name for item in managed.iterdir()} - (set(FILES) | {MARKER, "examples", "__pycache__"})
         if unexpected:
             raise ValueError("Installation contains extra files; refusing to overwrite: " + ", ".join(sorted(unexpected)))
-    stage = Path(tempfile.mkdtemp(prefix=".fitness-coach-stage-", dir=target.parent))
+    stage = Path(tempfile.mkdtemp(prefix=".fitness-coach-stage-", dir=release_root))
     release = None
     pointer = None
     try:
@@ -107,10 +110,10 @@ def install(source, target, sha):
         (stage / MARKER).chmod(0o600)
         validate(stage)
         stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        release = target.parent / f".fitness-coach-release-{stamp}-{sha[:12]}-{os.getpid()}"
+        release = release_root / f".fitness-coach-release-{stamp}-{sha[:12]}-{os.getpid()}"
         stage.rename(release)
         pointer = target.parent / f".fitness-coach-pointer-{os.getpid()}"
-        pointer.symlink_to(release.name, target_is_directory=True)
+        pointer.symlink_to(os.path.relpath(release, target.parent), target_is_directory=True)
         try:
             os.replace(pointer, target)  # atomic pointer swap: old skill remains active until this succeeds
         except BaseException:
@@ -157,7 +160,9 @@ def update(args, target):
     if args.check:
         print("upstream update available", current or "not-installed", "->", sha)
         return
-    with tempfile.TemporaryDirectory(prefix="fitness-coach-upstream-", dir=target.parent) as tmp:
+    work_root = target.parent.parent / "skill-releases" / "fitness-coach-hermes"
+    work_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="fitness-coach-upstream-", dir=work_root) as tmp:
         git("clone", "--depth", "1", "--branch", BRANCH, "--single-branch", REPO, tmp + "/repo")
         source = Path(tmp) / "repo"
         if git("rev-parse", "HEAD", cwd=source) != sha:

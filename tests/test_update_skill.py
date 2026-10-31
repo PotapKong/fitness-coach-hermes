@@ -17,8 +17,10 @@ class UpdaterTests(unittest.TestCase):
             target = pathlib.Path(tmp) / 'skills/fitness-coach-hermes'
             self.assertIsNone(update_skill.install(ROOT, target, 'a' * 40))
             self.assertTrue(target.is_symlink())
+            self.assertEqual(target.resolve().parent, pathlib.Path(tmp) / 'skill-releases/fitness-coach-hermes')
             self.assertEqual((target / update_skill.MARKER).read_text().strip(), 'a' * 40)
             backup = update_skill.install(ROOT, target, 'b' * 40)
+            self.assertEqual(backup.parent, pathlib.Path(tmp) / 'skill-releases/fitness-coach-hermes')
             self.assertEqual((backup / update_skill.MARKER).read_text().strip(), 'a' * 40)
             self.assertEqual((target / update_skill.MARKER).read_text().strip(), 'b' * 40)
             (target / 'private-data').mkdir()
